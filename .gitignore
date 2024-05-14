@@ -1,0 +1,6 @@
+temp/
+
+bin/Debug
+
+*.exe
+*.pdb

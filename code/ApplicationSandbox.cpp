@@ -24,11 +24,25 @@ namespace BGLRenderer
             -0.5f, -0.5f, 0.0f
         };
 
+        GLfloat normals[] = {
+            0.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 1.0f
+        };
+
+        GLfloat uvs[] = {
+            0.0f, 0.0f,
+            1.0f, 0.0f,
+            1.0f, 1.0f
+        };
+
         GLuint indices[] = {
             0, 1, 2
         };
-        
+
         _quadMesh->setVertices(vertices, sizeof(vertices) / sizeof(GLfloat));
+        _quadMesh->setNormals(normals, sizeof(normals) / sizeof(GLfloat));
+        _quadMesh->setUVs0(uvs, sizeof(uvs) / sizeof(GLfloat));
         _quadMesh->setIndices(indices, sizeof(indices) / sizeof(GLuint));
     }
 
@@ -42,7 +56,6 @@ namespace BGLRenderer
 
         _quadMesh->bind();
         _quadMesh->draw();
-        
     }
 
     void ApplicationSandbox::onIMGUI()

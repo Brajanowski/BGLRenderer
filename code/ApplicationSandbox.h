@@ -13,7 +13,7 @@ namespace BGLRenderer
     protected:
         virtual void onInit() override;
         virtual void onShutdown() override;
-        virtual void onUpdate() override;
+        virtual void onRender() override;
         virtual void onIMGUI() override;
 
     private:

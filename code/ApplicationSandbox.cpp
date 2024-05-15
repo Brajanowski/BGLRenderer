@@ -36,7 +36,7 @@ namespace BGLRenderer
     {
     }
 
-    void ApplicationSandbox::onUpdate()
+    void ApplicationSandbox::onRender()
     {
         _basicMaterial->bind();
 
@@ -50,5 +50,7 @@ namespace BGLRenderer
         ImGui::Begin("TEST");
         ImGui::Text("TEST");
         ImGui::End();
+
+        profilerWindow();
     }
 }

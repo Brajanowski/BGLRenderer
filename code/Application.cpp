@@ -6,8 +6,11 @@
 #include <iostream>
 #include <functional>
 
+#include "Timer.h" 
+
 namespace BGLRenderer
 {
+
     Application::Application(int argc, char** argv)
     {
     }
@@ -33,18 +36,30 @@ namespace BGLRenderer
 
         onInit();
 
+        HighResolutionTimer frameTimer;
+        HighResolutionTimer renderTimer;
+        HighResolutionTimer imguiTimer;
+
         while (!_window->exitRequested())
         {
+            frameTimer.restart();
+
             _window->processEvents();
 
+            renderTimer.restart();
             _renderer->beginFrame();
-            onUpdate();
-
+            onRender();
             _renderer->render();
-            
+
+            _profilerData.renderTime = renderTimer.elapsedMilliseconds();
+
+            imguiTimer.restart();
             tickImgui();
+            _profilerData.imguiTime = renderTimer.elapsedMilliseconds();
 
             _window->swapBuffers();
+            
+            _profilerData.totalFrameTime = frameTimer.elapsedMilliseconds();
         }
 
         onShutdown();
@@ -54,6 +69,17 @@ namespace BGLRenderer
         _renderer.reset();
         _window.reset();
         return 0;
+    }
+
+    void Application::profilerWindow()
+    {
+        ImGui::Begin("App profiler");
+
+        ImGui::Text("Frame: %.4fms", _profilerData.totalFrameTime);
+        ImGui::Text("Render: %.4fms", _profilerData.renderTime);
+        ImGui::Text("ImGui: %.4fms", _profilerData.imguiTime);
+
+        ImGui::End();
     }
 
     void Application::initImgui()

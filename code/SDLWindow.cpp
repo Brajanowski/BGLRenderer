@@ -16,6 +16,11 @@ namespace BGLRenderer
         destroyWindow();
     }
 
+    void SDLWindow::setVSync(bool enable)
+    {
+        SDL_GL_SetSwapInterval(enable ? 1 : 0);
+    }
+
     void SDLWindow::processEvents()
     {
         SDL_Event ev;

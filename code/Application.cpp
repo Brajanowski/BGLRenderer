@@ -10,7 +10,6 @@
 
 namespace BGLRenderer
 {
-
     Application::Application(int argc, char** argv)
     {
     }
@@ -30,6 +29,8 @@ namespace BGLRenderer
             _renderer->resizeFrame(width, height);
         });
 
+        _window->setVSync(false);
+
         _assetContentLoader = std::make_shared<AssetContentLoader>();
 
         initImgui();
@@ -40,8 +41,23 @@ namespace BGLRenderer
         HighResolutionTimer renderTimer;
         HighResolutionTimer imguiTimer;
 
+        double fpsTimer = 0.0;
+        int fpsCounter = 0;
+
         while (!_window->exitRequested())
         {
+            double deltaTime = frameTimer.elapsedSeconds();
+
+            fpsTimer += deltaTime;
+            fpsCounter++;
+
+            if (fpsTimer >= 1.0)
+            {
+                _profilerData.fps = fpsCounter;
+                fpsCounter = 0;
+                fpsTimer = 0.0;
+            }
+            
             frameTimer.restart();
 
             _window->processEvents();
@@ -75,6 +91,7 @@ namespace BGLRenderer
     {
         ImGui::Begin("App profiler");
 
+        ImGui::Text("FPS: %d", _profilerData.fps);
         ImGui::Text("Frame: %.4fms", _profilerData.totalFrameTime);
         ImGui::Text("Render: %.4fms", _profilerData.renderTime);
         ImGui::Text("ImGui: %.4fms", _profilerData.imguiTime);

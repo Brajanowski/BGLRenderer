@@ -10,9 +10,10 @@ namespace BGLRenderer
 {
     struct ApplicationProfilerData
     {
-        double totalFrameTime;
-        double renderTime;
-        double imguiTime;
+        double totalFrameTime = 0.0;
+        double renderTime = 0.0;
+        double imguiTime = 0.0;
+        int fps = 0;
     };
     
     class Application

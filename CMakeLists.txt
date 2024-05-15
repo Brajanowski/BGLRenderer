@@ -24,6 +24,7 @@ set(GLM_INCLUDE_DIRS ${CMAKE_CURRENT_LIST_DIR}/lib/glm)
 add_executable(BGLrenderer
     code/Base.h
     code/EntryPoint.cpp
+    code/Timer.h
     code/Application.h
     code/Application.cpp
     code/SDLWindow.h

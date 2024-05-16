@@ -15,6 +15,8 @@ namespace BGLRenderer
     {
         _program->bind();
 
+        int textureSlot = 0;
+
         for (const auto& [key, value] : _valuesMap)
         {
             switch (value.type)
@@ -33,6 +35,12 @@ namespace BGLRenderer
                 break;
             case OpenGLMaterialValueType::Matrix4x4:
                 _program->setMatrix4x4(value.uniformLocation, value.mat4x4);
+                break;
+            case OpenGLMaterialValueType::Texture:
+                value.texture->bind(textureSlot);
+                _program->setInt(value.uniformLocation, textureSlot);
+
+                textureSlot++;
                 break;
             }
         }
@@ -66,11 +74,18 @@ namespace BGLRenderer
         materialValue->vec4 = value;
     }
 
-    void OpenGLMaterial::setMatrix4X4(const std::string& name, const glm::mat4x4& value)
+    void OpenGLMaterial::setMatrix4x4(const std::string& name, const glm::mat4x4& value)
     {
         OpenGLMaterialValue* materialValue = getOrCreateValue(name);
         materialValue->type = OpenGLMaterialValueType::Matrix4x4;
         materialValue->mat4x4 = value;
+    }
+
+    void OpenGLMaterial::setTexture2D(const std::string& name, const std::shared_ptr<OpenGLTexture2D>& texture)
+    {
+        OpenGLMaterialValue* materialValue = getOrCreateValue(name);
+        materialValue->type = OpenGLMaterialValueType::Texture;
+        materialValue->texture = texture;
     }
 
     OpenGLMaterialValue* OpenGLMaterial::getOrCreateValue(const std::string& name)

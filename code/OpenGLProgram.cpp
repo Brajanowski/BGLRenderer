@@ -37,6 +37,11 @@ namespace BGLRenderer
         GL_CALL(glUseProgram(_program));
     }
 
+    void OpenGLProgram::setInt(GLint location, int value)
+    {
+        GL_CALL(glUniform1i(location, value));
+    }
+
     void OpenGLProgram::setFloat(GLint location, float value)
     {
         GL_CALL(glUniform1f(location, value));

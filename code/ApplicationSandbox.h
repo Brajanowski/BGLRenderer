@@ -20,7 +20,6 @@ namespace BGLRenderer
         virtual void onWindowResize(int width, int height) override;
 
     private:
-        std::shared_ptr<OpenGLProgram> _basicProgram;
         std::shared_ptr<OpenGLMaterial> _basicMaterial;
         std::shared_ptr<OpenGLMesh> _quadMesh;
 

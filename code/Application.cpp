@@ -33,6 +33,7 @@ namespace BGLRenderer
         _window->setVSync(false);
 
         _assetContentLoader = std::make_shared<AssetContentLoader>();
+        _assetsLoader = std::make_shared<AssetsLoader>(_assetContentLoader);
 
         initImgui();
 

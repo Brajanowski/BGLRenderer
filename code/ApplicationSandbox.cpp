@@ -10,21 +10,22 @@ namespace BGLRenderer
 
     void ApplicationSandbox::onInit()
     {
-        std::vector<std::uint8_t> basicVertContent = _assetContentLoader->load("shaders/basic.vert");
-        std::vector<std::uint8_t> basicFragmentContent = _assetContentLoader->load("shaders/basic.frag");
+        _basicMaterial = std::make_shared<OpenGLMaterial>(_assetsLoader->loadProgram("shaders/basic"));
 
-        _basicProgram = std::make_shared<OpenGLProgram>(std::string(basicVertContent.begin(), basicVertContent.end()), std::string(basicFragmentContent.begin(), basicFragmentContent.end()));
-        _basicMaterial = std::make_shared<OpenGLMaterial>(_basicProgram);
+        std::shared_ptr<OpenGLTexture2D> avatarTexture = _assetsLoader->loadTexture("avatar.png");
+        _basicMaterial->setTexture2D("textureTest", avatarTexture);
 
         _quadMesh = std::make_shared<OpenGLMesh>();
 
         GLfloat vertices[] = {
-            0.0f, 0.5f, 0.0f,
+            -0.5f, -0.5f, 0.0f,
             0.5f, -0.5f, 0.0f,
-            -0.5f, -0.5f, 0.0f
+            0.5f, 0.5f, 0.0f,
+            -0.5f, 0.5f, 0.0f,
         };
 
         GLfloat normals[] = {
+            0.0f, 0.0f, 1.0f,
             0.0f, 0.0f, 1.0f,
             0.0f, 0.0f, 1.0f,
             0.0f, 0.0f, 1.0f
@@ -33,11 +34,13 @@ namespace BGLRenderer
         GLfloat uvs[] = {
             0.0f, 0.0f,
             1.0f, 0.0f,
-            1.0f, 1.0f
+            1.0f, 1.0f,
+            0.0f, 1.0f
         };
 
         GLuint indices[] = {
-            0, 1, 2
+            0, 1, 2,
+            2, 3, 0
         };
 
         _quadMesh->setVertices(vertices, sizeof(vertices) / sizeof(GLfloat));

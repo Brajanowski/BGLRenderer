@@ -18,9 +18,12 @@ namespace BGLRenderer
 
     int Application::run()
     {
+        _input = std::make_shared<Input>();
+        
         _window = std::make_shared<SDLWindow>(1920, 1080);
-        _window->setOnSDLEventCallback([](const SDL_Event *ev) {
+        _window->setOnSDLEventCallback([&](const SDL_Event *ev) {
             ImGui_ImplSDL2_ProcessEvent(ev);
+            _input->processSDLEvent(ev);
         });
 
         _renderer = std::make_shared<OpenGLRenderer>(1920, 1080);
@@ -63,6 +66,7 @@ namespace BGLRenderer
             
             frameTimer.restart();
 
+            _input->startFrame();
             _window->processEvents();
 
             onUpdate(static_cast<float>(deltaTime));

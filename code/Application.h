@@ -6,6 +6,7 @@
 #include "SDLWindow.h"
 #include "AssetContentLoader.h"
 #include "AssetsLoader.h"
+#include "Input.h"
 #include "Timer.h"
 
 namespace BGLRenderer
@@ -31,6 +32,7 @@ namespace BGLRenderer
         std::shared_ptr<OpenGLRenderer> _renderer = nullptr;
         std::shared_ptr<AssetContentLoader> _assetContentLoader = nullptr;
         std::shared_ptr<AssetsLoader> _assetsLoader = nullptr;
+        std::shared_ptr<Input> _input = nullptr;
 
         ApplicationProfilerData _profilerData;
 

@@ -44,10 +44,17 @@ namespace BGLRenderer
         _quadMesh->setNormals(normals, sizeof(normals) / sizeof(GLfloat));
         _quadMesh->setUVs0(uvs, sizeof(uvs) / sizeof(GLfloat));
         _quadMesh->setIndices(indices, sizeof(indices) / sizeof(GLuint));
+
+        _camera = std::make_shared<PerspectiveCamera>();
     }
 
     void ApplicationSandbox::onShutdown()
     {
+    }
+
+    void ApplicationSandbox::onUpdate(float deltaTime)
+    {
+        _basicMaterial->setFloat("test", glm::sin(secondsSinceStart()));
     }
 
     void ApplicationSandbox::onRender()
@@ -60,10 +67,11 @@ namespace BGLRenderer
 
     void ApplicationSandbox::onIMGUI()
     {
-        ImGui::Begin("TEST");
-        ImGui::Text("TEST");
-        ImGui::End();
-
         profilerWindow();
+    }
+
+    void ApplicationSandbox::onWindowResize(int width, int height)
+    {
+        _camera->aspectRatio = (float)width / (float)height;
     }
 }

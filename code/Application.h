@@ -5,6 +5,7 @@
 #include "OpenGLRenderer.h"
 #include "SDLWindow.h"
 #include "AssetContentLoader.h"
+#include "Timer.h"
 
 namespace BGLRenderer
 {
@@ -35,12 +36,18 @@ namespace BGLRenderer
         
         virtual void onInit() = 0;
         virtual void onShutdown() = 0;
+        virtual void onUpdate(float deltaTime) = 0;
         virtual void onRender() = 0;
         virtual void onIMGUI() = 0;
+        virtual void onWindowResize(int width, int height) = 0;
+
+        double secondsSinceStart();
 
     private:
         void initImgui();
         void shutdownImgui();
         void tickImgui();
+
+        HighResolutionTimer _appTimer;
     };
 }

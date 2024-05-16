@@ -27,6 +27,7 @@ namespace BGLRenderer
         _window->setOnWindowResizedCallback([&](int width, int height)
         {
             _renderer->resizeFrame(width, height);
+            onWindowResize(width, height);
         });
 
         _window->setVSync(false);
@@ -44,6 +45,7 @@ namespace BGLRenderer
         double fpsTimer = 0.0;
         int fpsCounter = 0;
 
+        _appTimer.restart();
         while (!_window->exitRequested())
         {
             double deltaTime = frameTimer.elapsedSeconds();
@@ -61,6 +63,8 @@ namespace BGLRenderer
             frameTimer.restart();
 
             _window->processEvents();
+
+            onUpdate(static_cast<float>(deltaTime));
 
             renderTimer.restart();
             _renderer->beginFrame();
@@ -97,6 +101,11 @@ namespace BGLRenderer
         ImGui::Text("ImGui: %.4fms", _profilerData.imguiTime);
 
         ImGui::End();
+    }
+
+    double Application::secondsSinceStart()
+    {
+        return _appTimer.elapsedSeconds();
     }
 
     void Application::initImgui()

@@ -1,6 +1,5 @@
 ﻿#include "OpenGLProgram.h"
 
-#include <iostream>
 #include <vector>
 
 #include <gtc/type_ptr.hpp>
@@ -9,18 +8,16 @@ namespace BGLRenderer
 {
     OpenGLProgram::OpenGLProgram(const std::string& vertexShaderCode, const std::string& fragmentShaderCode)
     {
-        std::cout << "Creating OpenGL Program:" << std::endl;
+        openGLLogger.debug("Creating OpenGL program:");
 
         _program = glCreateProgram();
         ASSERT(_program != 0, "failed to create opengl program");
 
-        std::cout << "Vertex shader code: " << std::endl;
-        std::cout << vertexShaderCode << std::endl;
+        openGLLogger.debug("Vertex shader code:\n{}", vertexShaderCode);
         _vertexShader = createShader(vertexShaderCode, GL_VERTEX_SHADER);
         ASSERT(_vertexShader != 0, "failed to compile vertex shader");
 
-        std::cout << "Fragment shader code: " << std::endl;
-        std::cout << fragmentShaderCode << std::endl;
+        openGLLogger.debug("Fragment shader code:\n{}", fragmentShaderCode);
         _fragmentShader = createShader(fragmentShaderCode, GL_FRAGMENT_SHADER);
         ASSERT(_fragmentShader != 0, "failed to compile fragment shader");
 
@@ -73,7 +70,7 @@ namespace BGLRenderer
 
         if (location == -1)
         {
-            std::cout << "Couldn't find uniform location: " << name << std::endl;
+            openGLLogger.error("Couldn't find uniform location: {}", name);
         }
 
         ASSERT(location != -1, "Failed to find uniform location");
@@ -82,7 +79,7 @@ namespace BGLRenderer
 
     void OpenGLProgram::link()
     {
-        std::cout << "Linking program..." << std::endl;
+        openGLLogger.debug("Linking program...");
 
         GL_CALL(glAttachShader(_program, _vertexShader));
         GL_CALL(glAttachShader(_program, _fragmentShader));
@@ -100,7 +97,7 @@ namespace BGLRenderer
             std::vector<GLchar> infoLog(maxLength);
             GL_CALL(glGetProgramInfoLog(_program, maxLength, &maxLength, infoLog.data()));
 
-            std::cout << "shader linking error:" << std::endl << infoLog.data() << std::endl;
+            openGLLogger.debug("Shader linking error:\n{}", infoLog.data());
 
             ASSERT(false, "error occured while linking program");
         }
@@ -127,7 +124,7 @@ namespace BGLRenderer
             std::vector<GLchar> infoLog(maxLength);
             GL_CALL(glGetShaderInfoLog(shader, maxLength, &maxLength, infoLog.data()));
 
-            std::cout << "Shader compilation error: " << std::endl << infoLog.data() << std::endl;
+            openGLLogger.debug("Shader compilation error:\n{}", infoLog.data());
             glDeleteShader(shader);
             return 0;
         }

@@ -29,6 +29,10 @@ add_executable(BGLrenderer
     code/Application.cpp
     code/SDLWindow.h
     code/SDLWindow.cpp
+    code/Log.h
+    code/Log.cpp
+    code/ConsoleWindow.h
+    code/ConsoleWindow.cpp
     code/Input.h
     code/Input.cpp
     code/GLMMath.h

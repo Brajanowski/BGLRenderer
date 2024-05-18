@@ -4,7 +4,9 @@
 
 #include <glad/glad.h>
 
-#include <iostream>
+#include "Log.h"
+
+static BGLRenderer::Log openGLLogger = BGLRenderer::Log("OpenGL");
 
 static char const* openglErrorToString(const GLenum error) noexcept
 {
@@ -52,10 +54,9 @@ static void openglCheckError(const char* filename, size_t line)
 
     if (error != GL_NO_ERROR)
     {
-        std::cout << "[GL_CALL:error] " << filename << ": " << line << ": " << openglErrorToString(error) << std::endl;
+        openGLLogger.error("{}: {}: {}", filename, line, openglErrorToString(error));
     }
 }
-
 
 #define GL_CALL(_X) \
 { \

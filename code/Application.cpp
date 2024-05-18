@@ -18,6 +18,13 @@ namespace BGLRenderer
 
     int Application::run()
     {
+        Log::listen([](const std::string& message)
+        {
+            std::cout << message << std::endl;
+        });
+
+        _consoleWindow = std::make_shared<ConsoleWindow>();
+        
         _input = std::make_shared<Input>();
         
         _window = std::make_shared<SDLWindow>(1920, 1080);
@@ -143,6 +150,7 @@ namespace BGLRenderer
         ImGui::NewFrame();
 
         onIMGUI();
+        _consoleWindow->onIMGUI();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

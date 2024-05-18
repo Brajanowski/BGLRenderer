@@ -16,7 +16,7 @@ namespace BGLRenderer
         inline bool getButtonUp(unsigned int button) const { return _buttonsUp[button]; }
 
         inline glm::vec2 position() const { return _mousePosition; }
-        inline glm::vec2 deltaPosition() const { return _mousePosition; }
+        inline glm::vec2 deltaPosition() const { return _deltaPosition; }
 
         void startFrame();
         void processSDLEvent(const SDL_Event* ev);
@@ -25,6 +25,7 @@ namespace BGLRenderer
         bool _buttons[MaxButtons] = {};
         bool _buttonsDown[MaxButtons] = {};
         bool _buttonsUp[MaxButtons] = {};
+        
         glm::vec2 _mousePosition = {0.0f, 0.0f};
         glm::vec2 _deltaPosition = {0.0f, 0.0f};
     };

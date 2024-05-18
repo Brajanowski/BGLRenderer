@@ -11,5 +11,5 @@ uniform sampler2D textureTest;
 void main()
 {
     vec4 textureColor = texture2D(textureTest, uv0);
-    fragColor = vec4(textureColor.xyz * test, 1);
+    fragColor = vec4(textureColor.xyz * max(0.5, test), 1);
 }

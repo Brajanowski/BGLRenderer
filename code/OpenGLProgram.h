@@ -2,9 +2,9 @@
 
 #include <string>
 
-#include "OpenGLBase.h"
+#include "GLMMath.h"
 
-#include <glm.hpp>
+#include "OpenGLBase.h"
 
 namespace BGLRenderer
 {

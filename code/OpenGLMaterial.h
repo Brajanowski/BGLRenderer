@@ -4,11 +4,10 @@
 #include <string>
 #include <map>
 
+#include "GLMMath.h"
+
 #include "OpenGLBase.h"
 #include "OpenGLProgram.h"
-
-#include <glm.hpp>
-
 #include "OpenGLTexture2D.h"
 
 namespace BGLRenderer

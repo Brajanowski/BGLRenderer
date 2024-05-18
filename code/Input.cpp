@@ -52,7 +52,7 @@ namespace BGLRenderer
             _keys[keycode] = true;
             _keysDown[keycode] = true;
         }
-        else if (ev->type == SDL_KEYDOWN)
+        else if (ev->type == SDL_KEYUP)
         {
             unsigned int keycode = ev->key.keysym.sym;
             if (keycode >= MaxKeys)

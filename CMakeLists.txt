@@ -31,6 +31,7 @@ add_executable(BGLrenderer
     code/SDLWindow.cpp
     code/Input.h
     code/Input.cpp
+    code/GLMMath.h
     code/Transform.h
     code/PerspectiveCamera.h
     code/OpenGLBase.h

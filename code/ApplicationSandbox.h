@@ -24,5 +24,9 @@ namespace BGLRenderer
         std::shared_ptr<OpenGLMesh> _quadMesh;
 
         std::shared_ptr<PerspectiveCamera> _camera;
+        float _cameraPitch = 0.0f;
+        float _cameraYaw = 0.0f;
+
+        void printMatrices();
     };
 }

@@ -1,7 +1,6 @@
 ﻿#pragma once
 
-#include <glm.hpp>
-#include <gtc/quaternion.hpp>
+#include "GLMMath.h"
 
 namespace BGLRenderer
 {
@@ -9,7 +8,7 @@ namespace BGLRenderer
     {
         glm::vec3 position = glm::vec3(0, 0, 0);
         glm::vec3 scale = glm::vec3(1, 1, 1);
-        glm::quat rotation = glm::quat(0, 0, 0, 1);
+        glm::quat rotation = glm::identity<glm::quat>();
 
         inline glm::mat4x4 modelMatrix() const
         {

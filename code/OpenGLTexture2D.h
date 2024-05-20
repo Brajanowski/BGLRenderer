@@ -15,11 +15,14 @@ namespace BGLRenderer
 
         void bind(int slot = 0);
 
+        void setWrapMode(GLenum wrapMode);
+        void setFilterMode(GLenum filterMode);
+
     private:
         GLuint _id;
         GLuint _width;
         GLuint _height;
-        GLenum  _format;
+        GLenum _format;
         GLenum _wrapMode;
         GLenum _filterMode;
     };

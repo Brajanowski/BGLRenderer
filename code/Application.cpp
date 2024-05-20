@@ -80,8 +80,8 @@ namespace BGLRenderer
 
             renderTimer.restart();
             _renderer->beginFrame();
-            onRender();
-            _renderer->render();
+            onRender(_renderer);
+            _renderer->endFrame();
 
             _profilerData.renderTime = renderTimer.elapsedMilliseconds();
 

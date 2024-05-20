@@ -94,7 +94,7 @@ namespace BGLRenderer
         {
             OpenGLMaterialValue value{};
             value.name = name;
-            value.uniformLocation = _program->getUniformLocation(name);
+            value.uniformLocation = _program->getUniformLocation("u_" + name);
             _valuesMap[name] = value;
         }
 

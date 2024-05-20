@@ -20,7 +20,7 @@ namespace BGLRenderer
         double imguiTime = 0.0;
         int fps = 0;
     };
-    
+ 
     class Application
     {
     public:
@@ -46,7 +46,7 @@ namespace BGLRenderer
         virtual void onInit() = 0;
         virtual void onShutdown() = 0;
         virtual void onUpdate(float deltaTime) = 0;
-        virtual void onRender() = 0;
+        virtual void onRender(const std::shared_ptr<OpenGLRenderer>& renderer) = 0;
         virtual void onIMGUI() = 0;
         virtual void onWindowResize(int width, int height) = 0;
 

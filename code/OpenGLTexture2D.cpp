@@ -40,4 +40,22 @@ namespace BGLRenderer
         GL_CALL(glActiveTexture(GL_TEXTURE0 + slot));
         GL_CALL(glBindTexture(GL_TEXTURE_2D, _id));
     }
+
+    void OpenGLTexture2D::setWrapMode(GLenum wrapMode)
+    {
+        _wrapMode = wrapMode;
+
+        bind(0);
+        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, _wrapMode));
+        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, _wrapMode));
+    }
+
+    void OpenGLTexture2D::setFilterMode(GLenum filterMode)
+    {
+        _filterMode = filterMode;
+
+        bind(0);
+        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, _filterMode));
+        GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, _filterMode));
+    }
 }

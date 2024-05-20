@@ -14,7 +14,7 @@ namespace BGLRenderer
         _basicMaterial = std::make_shared<OpenGLMaterial>(_assetsLoader->loadProgram("shaders/basic"));
 
         std::shared_ptr<OpenGLTexture2D> avatarTexture = _assetsLoader->loadTexture("avatar.png");
-        _basicMaterial->setTexture2D("textureTest", avatarTexture);
+        _basicMaterial->setTexture2D("baseColor", avatarTexture);
 
         _quadMesh = std::make_shared<OpenGLMesh>();
 
@@ -51,6 +51,17 @@ namespace BGLRenderer
 
         _camera = std::make_shared<PerspectiveCamera>();
         _camera->transform.position = {0.1f, 0, 5.0f};
+
+        _monkey = _assetsLoader->loadModel("monkey.gltf");
+        _sponza = _assetsLoader->loadModel("sponza/sponza.gltf");
+
+        const float sponzaScaleFactor = 0.1f;
+        glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0), glm::vec3(sponzaScaleFactor, sponzaScaleFactor, sponzaScaleFactor));
+
+        for (const auto& submesh : _sponza->submeshes())
+        {
+            submesh.material->setMatrix4x4("model", scaleMatrix);
+        }
     }
 
     void ApplicationSandbox::onShutdown()
@@ -59,37 +70,36 @@ namespace BGLRenderer
 
     void ApplicationSandbox::onUpdate(float deltaTime)
     {
-        constexpr float cameraSpeed = 5.0f;
         constexpr float cameraSensitivity = 0.7f;
 
         if (_input->keyboard()->getKey(SDLK_w))
         {
-            _camera->transform.position += _camera->forward() * cameraSpeed * deltaTime;
+            _camera->transform.position += _camera->forward() * _cameraSpeed * deltaTime;
         }
 
         if (_input->keyboard()->getKey(SDLK_s))
         {
-            _camera->transform.position += _camera->forward() * cameraSpeed * deltaTime * -1.0f;
+            _camera->transform.position += _camera->forward() * _cameraSpeed * deltaTime * -1.0f;
         }
 
         if (_input->keyboard()->getKey(SDLK_d))
         {
-            _camera->transform.position += _camera->right() * cameraSpeed * deltaTime;
+            _camera->transform.position += _camera->right() * _cameraSpeed * deltaTime;
         }
 
         if (_input->keyboard()->getKey(SDLK_a))
         {
-            _camera->transform.position += _camera->right() * cameraSpeed * deltaTime * -1.0f;
+            _camera->transform.position += _camera->right() * _cameraSpeed * deltaTime * -1.0f;
         }
 
         if (_input->keyboard()->getKey(SDLK_e))
         {
-            _camera->transform.position += _camera->up() * cameraSpeed * deltaTime;
+            _camera->transform.position += _camera->up() * _cameraSpeed * deltaTime;
         }
 
         if (_input->keyboard()->getKey(SDLK_q))
         {
-            _camera->transform.position += _camera->up() * cameraSpeed * deltaTime * -1.0f;
+            _camera->transform.position += _camera->up() * _cameraSpeed * deltaTime * -1.0f;
         }
 
         if (_input->mouse()->getButton(SDL_BUTTON_RIGHT))
@@ -106,9 +116,19 @@ namespace BGLRenderer
 
         glm::mat4x4 viewProjection = _camera->viewProjection();
         _basicMaterial->setMatrix4x4("viewProjection", viewProjection);
+
+        for (auto& submesh : _monkey->submeshes())
+        {
+            submesh.material->setMatrix4x4("viewProjection", viewProjection);
+        }
+        
+        for (auto& submesh : _sponza->submeshes())
+        {
+            submesh.material->setMatrix4x4("viewProjection", viewProjection);
+        }
     }
 
-    void ApplicationSandbox::onRender()
+    void ApplicationSandbox::onRender(const std::shared_ptr<OpenGLRenderer>& renderer)
     {
         //GL_CALL(glEnable(GL_CULL_FACE));
         //GL_CALL(glCullFace(GL_FRONT));
@@ -116,6 +136,9 @@ namespace BGLRenderer
 
         _quadMesh->bind();
         _quadMesh->draw();
+
+        renderer->submit(_monkey);
+        renderer->submit(_sponza);
     }
 
     void ApplicationSandbox::onIMGUI()
@@ -124,6 +147,8 @@ namespace BGLRenderer
 
         ImGui::Begin("Camera");
 
+        ImGui::InputFloat("Speed", &_cameraSpeed);
+        
         ImGui::InputFloat3("Position", glm::value_ptr(_camera->transform.position));
         ImGui::InputFloat("Pitch", &_cameraPitch);
         ImGui::InputFloat("Yaw", &_cameraYaw);

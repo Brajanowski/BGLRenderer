@@ -4,7 +4,8 @@ namespace BGLRenderer
 {
     std::vector<std::uint8_t> AssetContentLoader::load(const std::string& path)
     {
-        FILE* file = fopen((_assetsFolderPath + path).c_str(), "rb");
+        std::string filePath = _assetsFolderPath + path;
+        FILE* file = fopen(filePath.c_str(), "rb");
         fseek(file, 0, SEEK_END);
         std::size_t size = ftell(file);
         fseek(file, 0, SEEK_SET);

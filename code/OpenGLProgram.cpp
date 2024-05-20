@@ -73,7 +73,6 @@ namespace BGLRenderer
             openGLLogger.error("Couldn't find uniform location: {}", name);
         }
 
-        ASSERT(location != -1, "Failed to find uniform location");
         return location;
     }
 

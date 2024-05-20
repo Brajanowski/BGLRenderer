@@ -47,6 +47,7 @@ add_executable(BGLrenderer
     code/OpenGLTexture2D.cpp
     code/OpenGLMesh.h
     code/OpenGLMesh.cpp
+    code/OpenGLRenderObject.h
     code/OpenGLRenderer.h
     code/OpenGLRenderer.cpp
     code/AssetContentLoader.h
@@ -56,6 +57,7 @@ add_executable(BGLrenderer
     code/ApplicationSandbox.h
     code/ApplicationSandbox.cpp
     code/stb_image.h
+    code/cgltf.h
     lib/imgui/backends/imgui_impl_opengl3.cpp
     lib/imgui/backends/imgui_impl_opengl3.h
     lib/imgui/backends/imgui_impl_sdl.cpp

@@ -1,10 +1,13 @@
 #include <memory>
 
+#include "Engine.h"
 #include "ApplicationSandbox.h"
 
 int main(int argc, char **argv)
 {
     using namespace BGLRenderer;
-    std::shared_ptr<ApplicationSandbox> app = std::make_shared<ApplicationSandbox>(argc, argv);
-    return app->run();
+
+    std::shared_ptr<Engine> engine = std::make_shared<Engine>(argc, argv);
+    engine->setApplication<BGLRenderer::ApplicationSandbox>();
+    return engine->run();
 }

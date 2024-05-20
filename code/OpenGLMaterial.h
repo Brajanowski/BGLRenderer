@@ -55,6 +55,8 @@ namespace BGLRenderer
         void setMatrix4x4(const std::string& name, const glm::mat4x4& value);
         void setTexture2D(const std::string& name, const std::shared_ptr<OpenGLTexture2D> &texture);
 
+        inline const std::shared_ptr<OpenGLProgram>& program() const { return _program; }
+
     private:
         std::shared_ptr<OpenGLProgram> _program;
         std::map<std::string, OpenGLMaterialValue> _valuesMap;

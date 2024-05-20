@@ -1,4 +1,4 @@
-﻿#include "Application.h"
+﻿#include "Engine.h"
 
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_opengl3.h>
@@ -6,17 +6,17 @@
 #include <iostream>
 #include <functional>
 
-#include "Timer.h" 
-
 namespace BGLRenderer
 {
-    Application::Application(int argc, char** argv)
+    Engine::Engine(int argc, char** argv)
     {
     }
 
-    Application::~Application() = default;
+    Engine::~Engine()
+    {
+    }
 
-    int Application::run()
+    int Engine::run()
     {
         Log::listen([](const std::string& message)
         {
@@ -24,11 +24,12 @@ namespace BGLRenderer
         });
 
         _consoleWindow = std::make_shared<ConsoleWindow>();
-        
+
         _input = std::make_shared<Input>();
-        
+
         _window = std::make_shared<SDLWindow>(1920, 1080);
-        _window->setOnSDLEventCallback([&](const SDL_Event *ev) {
+        _window->setOnSDLEventCallback([&](const SDL_Event* ev)
+        {
             ImGui_ImplSDL2_ProcessEvent(ev);
             _input->processSDLEvent(ev);
         });
@@ -37,7 +38,7 @@ namespace BGLRenderer
         _window->setOnWindowResizedCallback([&](int width, int height)
         {
             _renderer->resizeFrame(width, height);
-            onWindowResize(width, height);
+            _application->onWindowResize(width, height);
         });
 
         _window->setVSync(false);
@@ -47,7 +48,7 @@ namespace BGLRenderer
 
         initImgui();
 
-        onInit();
+        _application->onInit();
 
         HighResolutionTimer frameTimer;
         HighResolutionTimer renderTimer;
@@ -70,17 +71,17 @@ namespace BGLRenderer
                 fpsCounter = 0;
                 fpsTimer = 0.0;
             }
-            
+
             frameTimer.restart();
 
             _input->startFrame();
             _window->processEvents();
 
-            onUpdate(static_cast<float>(deltaTime));
+            _application->onUpdate(static_cast<float>(deltaTime));
 
             renderTimer.restart();
             _renderer->beginFrame();
-            onRender(_renderer);
+            _application->onRender(_renderer);
             _renderer->endFrame();
 
             _profilerData.renderTime = renderTimer.elapsedMilliseconds();
@@ -90,20 +91,25 @@ namespace BGLRenderer
             _profilerData.imguiTime = renderTimer.elapsedMilliseconds();
 
             _window->swapBuffers();
-            
+
             _profilerData.totalFrameTime = frameTimer.elapsedMilliseconds();
         }
 
-        onShutdown();
+        _application->onShutdown();
+        _application.reset(nullptr);
 
         shutdownImgui();
 
+        _assetsLoader.reset();
+        _assetContentLoader.reset();
         _renderer.reset();
+        _input.reset();
         _window.reset();
+
         return 0;
     }
 
-    void Application::profilerWindow()
+    void Engine::profilerWindow()
     {
         ImGui::Begin("App profiler");
 
@@ -115,12 +121,12 @@ namespace BGLRenderer
         ImGui::End();
     }
 
-    double Application::secondsSinceStart()
+    double Engine::secondsSinceStart()
     {
         return _appTimer.elapsedSeconds();
     }
 
-    void Application::initImgui()
+    void Engine::initImgui()
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -133,13 +139,13 @@ namespace BGLRenderer
         ImGui_ImplOpenGL3_Init();
     }
 
-    void Application::shutdownImgui()
+    void Engine::shutdownImgui()
     {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplSDL2_Shutdown();
     }
 
-    void Application::tickImgui()
+    void Engine::tickImgui()
     {
         ImGui_ImplSDL2_NewFrame();
         ImGui_ImplOpenGL3_NewFrame();
@@ -150,9 +156,23 @@ namespace BGLRenderer
         ImGui::NewFrame();
 
         onIMGUI();
-        _consoleWindow->onIMGUI();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+
+    void Engine::onIMGUI()
+    {
+        _application->onIMGUI();
+
+        if (_showProfilerWindow)
+        {
+            profilerWindow();
+        }
+
+        if (_showConsoleWindow)
+        {
+            _consoleWindow->onIMGUI();
+        }
     }
 }

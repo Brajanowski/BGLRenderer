@@ -1,67 +1,28 @@
 ﻿#include "ApplicationSandbox.h"
 
 #include <imgui.h>
+
+#include "Engine.h"
 #include "GLMMath.h"
 
 namespace BGLRenderer
 {
-    ApplicationSandbox::ApplicationSandbox(int argc, char** argv) : Application(argc, argv)
+    ApplicationSandbox::ApplicationSandbox()
     {
     }
 
     void ApplicationSandbox::onInit()
     {
-        _basicMaterial = std::make_shared<OpenGLMaterial>(_assetsLoader->loadProgram("shaders/basic"));
-
-        std::shared_ptr<OpenGLTexture2D> avatarTexture = _assetsLoader->loadTexture("avatar.png");
-        _basicMaterial->setTexture2D("baseColor", avatarTexture);
-
-        _quadMesh = std::make_shared<OpenGLMesh>();
-
-        GLfloat vertices[] = {
-            -0.5f, -0.5f, 0.0f,
-            0.5f, -0.5f, 0.0f,
-            0.5f, 0.5f, 0.0f,
-            -0.5f, 0.5f, 0.0f,
-        };
-
-        GLfloat normals[] = {
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f
-        };
-
-        GLfloat uvs[] = {
-            0.0f, 0.0f,
-            1.0f, 0.0f,
-            1.0f, 1.0f,
-            0.0f, 1.0f
-        };
-
-        GLuint indices[] = {
-            0, 1, 2,
-            2, 3, 0
-        };
-
-        _quadMesh->setVertices(vertices, sizeof(vertices) / sizeof(GLfloat));
-        _quadMesh->setNormals(normals, sizeof(normals) / sizeof(GLfloat));
-        _quadMesh->setUVs0(uvs, sizeof(uvs) / sizeof(GLfloat));
-        _quadMesh->setIndices(indices, sizeof(indices) / sizeof(GLuint));
-
         _camera = std::make_shared<PerspectiveCamera>();
-        _camera->transform.position = {0.1f, 0, 5.0f};
+        _camera->transform.position = {0.0f, 20.0f, 5.0f};
 
-        _monkey = _assetsLoader->loadModel("monkey.gltf");
-        _sponza = _assetsLoader->loadModel("sponza/sponza.gltf");
+        _monkey = _engine->assetsLoader()->loadModel("monkey.gltf");
+        _sponza = _engine->assetsLoader()->loadModel("sponza/sponza.gltf");
 
         const float sponzaScaleFactor = 0.1f;
         glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0), glm::vec3(sponzaScaleFactor, sponzaScaleFactor, sponzaScaleFactor));
 
-        for (const auto& submesh : _sponza->submeshes())
-        {
-            submesh.material->setMatrix4x4("model", scaleMatrix);
-        }
+        _sponza->setModelMatrix(scaleMatrix);
     }
 
     void ApplicationSandbox::onShutdown()
@@ -72,39 +33,41 @@ namespace BGLRenderer
     {
         constexpr float cameraSensitivity = 0.7f;
 
-        if (_input->keyboard()->getKey(SDLK_w))
+        std::shared_ptr<Input> input = _engine->input();
+
+        if (input->keyboard()->getKey(SDLK_w))
         {
             _camera->transform.position += _camera->forward() * _cameraSpeed * deltaTime;
         }
 
-        if (_input->keyboard()->getKey(SDLK_s))
+        if (input->keyboard()->getKey(SDLK_s))
         {
             _camera->transform.position += _camera->forward() * _cameraSpeed * deltaTime * -1.0f;
         }
 
-        if (_input->keyboard()->getKey(SDLK_d))
+        if (input->keyboard()->getKey(SDLK_d))
         {
             _camera->transform.position += _camera->right() * _cameraSpeed * deltaTime;
         }
 
-        if (_input->keyboard()->getKey(SDLK_a))
+        if (input->keyboard()->getKey(SDLK_a))
         {
             _camera->transform.position += _camera->right() * _cameraSpeed * deltaTime * -1.0f;
         }
 
-        if (_input->keyboard()->getKey(SDLK_e))
+        if (input->keyboard()->getKey(SDLK_e))
         {
             _camera->transform.position += _camera->up() * _cameraSpeed * deltaTime;
         }
 
-        if (_input->keyboard()->getKey(SDLK_q))
+        if (input->keyboard()->getKey(SDLK_q))
         {
             _camera->transform.position += _camera->up() * _cameraSpeed * deltaTime * -1.0f;
         }
 
-        if (_input->mouse()->getButton(SDL_BUTTON_RIGHT))
+        if (input->mouse()->getButton(SDL_BUTTON_RIGHT))
         {
-            glm::vec2 deltaPosition = _input->mouse()->deltaPosition();
+            glm::vec2 deltaPosition = input->mouse()->deltaPosition();
 
             _cameraPitch -= deltaPosition.y * cameraSensitivity;
             _cameraYaw -= deltaPosition.x * cameraSensitivity;
@@ -112,30 +75,16 @@ namespace BGLRenderer
             _camera->transform.rotation = glm::quat(glm::vec3(glm::radians(_cameraPitch), glm::radians(_cameraYaw), 0.0f));
         }
 
-        _basicMaterial->setFloat("test", glm::sin((float)secondsSinceStart()));
+        float t = glm::sin(static_cast<float>(_engine->secondsSinceStart()) * 0.05f);
+        glm::mat4 monkeyTranslation = glm::translate(glm::mat4(1.0f), glm::vec3(0, 5, 0));
+        glm::mat4 monkeyRotation = glm::rotate(glm::mat4(1.0f), t * glm::pi<float>() * 2.0f, glm::vec3(0, 1, 0));
 
-        glm::mat4x4 viewProjection = _camera->viewProjection();
-        _basicMaterial->setMatrix4x4("viewProjection", viewProjection);
-
-        for (auto& submesh : _monkey->submeshes())
-        {
-            submesh.material->setMatrix4x4("viewProjection", viewProjection);
-        }
-        
-        for (auto& submesh : _sponza->submeshes())
-        {
-            submesh.material->setMatrix4x4("viewProjection", viewProjection);
-        }
+        _monkey->setModelMatrix(monkeyRotation * monkeyTranslation);
     }
 
     void ApplicationSandbox::onRender(const std::shared_ptr<OpenGLRenderer>& renderer)
     {
-        //GL_CALL(glEnable(GL_CULL_FACE));
-        //GL_CALL(glCullFace(GL_FRONT));
-        _basicMaterial->bind();
-
-        _quadMesh->bind();
-        _quadMesh->draw();
+        renderer->setViewProjectionMatrix(_camera->viewProjection());
 
         renderer->submit(_monkey);
         renderer->submit(_sponza);
@@ -143,8 +92,6 @@ namespace BGLRenderer
 
     void ApplicationSandbox::onIMGUI()
     {
-        profilerWindow();
-
         ImGui::Begin("Camera");
 
         ImGui::InputFloat("Speed", &_cameraSpeed);

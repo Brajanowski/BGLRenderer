@@ -13,7 +13,7 @@ namespace BGLRenderer
         std::shared_ptr<OpenGLMaterial> material;
         std::shared_ptr<OpenGLMesh> mesh;
     };
-    
+
     class OpenGLRenderObject
     {
     public:
@@ -27,7 +27,12 @@ namespace BGLRenderer
 
         inline const std::vector<RenderObjectSubmesh>& submeshes() const { return _submeshes; }
 
+        inline void setModelMatrix(const glm::mat4& model) { _modelMatrix = model; }
+        inline const glm::mat4& modelMatrix() const { return _modelMatrix; }
+
     private:
         std::vector<RenderObjectSubmesh> _submeshes;
+
+        glm::mat4 _modelMatrix = glm::mat4(1);
     };
 }

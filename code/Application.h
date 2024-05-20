@@ -2,46 +2,20 @@
 
 #include <memory>
 
-#include "OpenGLRenderer.h"
-#include "SDLWindow.h"
-#include "AssetContentLoader.h"
-#include "AssetsLoader.h"
-#include "ConsoleWindow.h"
-#include "Input.h"
 #include "Log.h"
-#include "Timer.h"
+#include "OpenGLRenderer.h"
 
 namespace BGLRenderer
 {
-    struct ApplicationProfilerData
-    {
-        double totalFrameTime = 0.0;
-        double renderTime = 0.0;
-        double imguiTime = 0.0;
-        int fps = 0;
-    };
- 
+    class Engine;
+
     class Application
     {
     public:
-        Application(int argc, char **argv);
-        virtual ~Application();
+        Application() = default;
+        virtual ~Application() = default;
 
-        int run();
-
-    protected:
-        Log _logger{"App"};
-
-        std::shared_ptr<SDLWindow> _window = nullptr;
-        std::shared_ptr<OpenGLRenderer> _renderer = nullptr;
-        std::shared_ptr<AssetContentLoader> _assetContentLoader = nullptr;
-        std::shared_ptr<AssetsLoader> _assetsLoader = nullptr;
-        std::shared_ptr<Input> _input = nullptr;
-        std::shared_ptr<ConsoleWindow> _consoleWindow = nullptr;
-
-        ApplicationProfilerData _profilerData;
-
-        void profilerWindow();
+        inline void setEngine(Engine* engine) { _engine = engine; }
         
         virtual void onInit() = 0;
         virtual void onShutdown() = 0;
@@ -50,13 +24,9 @@ namespace BGLRenderer
         virtual void onIMGUI() = 0;
         virtual void onWindowResize(int width, int height) = 0;
 
-        double secondsSinceStart();
+    protected:
+        Log _logger{"App"};
 
-    private:
-        void initImgui();
-        void shutdownImgui();
-        void tickImgui();
-
-        HighResolutionTimer _appTimer;
+        Engine* _engine;
     };
 }

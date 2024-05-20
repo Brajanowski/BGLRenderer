@@ -9,7 +9,7 @@ namespace BGLRenderer
     class ApplicationSandbox : public Application
     {
     public:
-        ApplicationSandbox(int argc, char** argv);
+        ApplicationSandbox();
         
     protected:
         virtual void onInit() override;
@@ -20,9 +20,6 @@ namespace BGLRenderer
         virtual void onWindowResize(int width, int height) override;
 
     private:
-        std::shared_ptr<OpenGLMaterial> _basicMaterial;
-        std::shared_ptr<OpenGLMesh> _quadMesh;
-
         std::shared_ptr<OpenGLRenderObject> _monkey;
         std::shared_ptr<OpenGLRenderObject> _sponza;
 

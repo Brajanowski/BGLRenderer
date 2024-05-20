@@ -67,12 +67,6 @@ namespace BGLRenderer
     GLint OpenGLProgram::getUniformLocation(const std::string& name)
     {
         GLint location = glGetUniformLocation(_program, name.c_str());
-
-        if (location == -1)
-        {
-            openGLLogger.error("Couldn't find uniform location: {}", name);
-        }
-
         return location;
     }
 

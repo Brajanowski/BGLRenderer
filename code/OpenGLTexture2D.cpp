@@ -23,6 +23,15 @@ namespace BGLRenderer
         GL_CALL(glDeleteTextures(1, &_id));
     }
 
+    void OpenGLTexture2D::resize(GLuint width, GLuint height)
+    {
+        _width = width;
+        _height = height;
+
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, _id));
+        GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, _format, _width, _height, 0, _format, GL_UNSIGNED_BYTE, NULL));
+    }
+
     void OpenGLTexture2D::setPixels(GLuint format, GLbyte* pixels)
     {
         GL_CALL(glBindTexture(GL_TEXTURE_2D, _id));
@@ -35,10 +44,24 @@ namespace BGLRenderer
         GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, _format, _width, _height, 0, format, GL_FLOAT, pixels));
     }
 
+    void OpenGLTexture2D::generatePixelsBuffer()
+    {
+        bind();
+        GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, _format, _width, _height, 0, _format, GL_UNSIGNED_BYTE, NULL));
+    }
+
     void OpenGLTexture2D::bind(int slot)
     {
+        _bindSlot = slot;
+
         GL_CALL(glActiveTexture(GL_TEXTURE0 + slot));
         GL_CALL(glBindTexture(GL_TEXTURE_2D, _id));
+    }
+
+    void OpenGLTexture2D::unbind()
+    {
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + _bindSlot));
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
     }
 
     void OpenGLTexture2D::setWrapMode(GLenum wrapMode)

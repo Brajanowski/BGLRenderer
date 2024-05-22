@@ -16,8 +16,8 @@ namespace BGLRenderer
         _camera = std::make_shared<PerspectiveCamera>();
         _camera->transform.position = {0.0f, 20.0f, 5.0f};
 
-        _monkey = _engine->assetsLoader()->loadModel("monkey.gltf");
-        _sponza = _engine->assetsLoader()->loadModel("sponza/sponza.gltf");
+        _monkey = _engine->assetsLoader()->loadModel("monkey.gltf", _engine->assetsLoader()->loadProgram("shaders/gbuffer_default"));
+        _sponza = _engine->assetsLoader()->loadModel("sponza/sponza.gltf", _engine->assetsLoader()->loadProgram("shaders/gbuffer_default"));
 
         const float sponzaScaleFactor = 0.1f;
         glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0), glm::vec3(sponzaScaleFactor, sponzaScaleFactor, sponzaScaleFactor));
@@ -84,7 +84,7 @@ namespace BGLRenderer
 
     void ApplicationSandbox::onRender(const std::shared_ptr<OpenGLRenderer>& renderer)
     {
-        renderer->setViewProjectionMatrix(_camera->viewProjection());
+        renderer->setCamera(_camera);
 
         renderer->submit(_monkey);
         renderer->submit(_sponza);
@@ -95,6 +95,10 @@ namespace BGLRenderer
         ImGui::Begin("Camera");
 
         ImGui::InputFloat("Speed", &_cameraSpeed);
+
+        ImGui::InputFloat("FOV", &_camera->fieldOfView);
+        ImGui::InputFloat("Near Z", &_camera->nearZ);
+        ImGui::InputFloat("Far Z", &_camera->farZ);
         
         ImGui::InputFloat3("Position", glm::value_ptr(_camera->transform.position));
         ImGui::InputFloat("Pitch", &_cameraPitch);
@@ -110,23 +114,11 @@ namespace BGLRenderer
         ImGui::Text("Right: %.4f, %.4f, %.4f", right.x, right.y, right.z);
         ImGui::Text("Up: %.4f, %.4f, %.4f", up.x, up.y, up.z);
 
-        if (ImGui::Button("Print matrices"))
-        {
-            printMatrices();
-        }
-
         ImGui::End();
     }
 
     void ApplicationSandbox::onWindowResize(int width, int height)
     {
         _camera->aspectRatio = (float)width / (float)height;
-    }
-
-    void ApplicationSandbox::printMatrices()
-    {
-        printVec3(_camera->transform.position);
-        printMatrix("View matrix", _camera->view());
-        printMatrix("Projection matrix", _camera->projection());
     }
 }

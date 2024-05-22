@@ -26,6 +26,8 @@ namespace BGLRenderer
         _consoleWindow = std::make_shared<ConsoleWindow>();
 
         _input = std::make_shared<Input>();
+        _assetContentLoader = std::make_shared<AssetContentLoader>();
+        _assetsLoader = std::make_shared<AssetsLoader>(_assetContentLoader);
 
         _window = std::make_shared<SDLWindow>(1920, 1080);
         _window->setOnSDLEventCallback([&](const SDL_Event* ev)
@@ -34,7 +36,7 @@ namespace BGLRenderer
             _input->processSDLEvent(ev);
         });
 
-        _renderer = std::make_shared<OpenGLRenderer>(1920, 1080);
+        _renderer = std::make_shared<OpenGLRenderer>(_assetsLoader, 1920, 1080);
         _window->setOnWindowResizedCallback([&](int width, int height)
         {
             _renderer->resizeFrame(width, height);
@@ -42,9 +44,6 @@ namespace BGLRenderer
         });
 
         _window->setVSync(false);
-
-        _assetContentLoader = std::make_shared<AssetContentLoader>();
-        _assetsLoader = std::make_shared<AssetsLoader>(_assetContentLoader);
 
         initImgui();
 
@@ -164,6 +163,7 @@ namespace BGLRenderer
     void Engine::onIMGUI()
     {
         _application->onIMGUI();
+        _renderer->onIMGUI();
 
         if (_showProfilerWindow)
         {

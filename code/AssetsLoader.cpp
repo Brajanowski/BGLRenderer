@@ -39,7 +39,7 @@ namespace BGLRenderer
         {
             return _loadedPrograms[programName];
         }
-        
+
         std::vector<std::uint8_t> vertexContent = _contentLoader->load(vertexShaderName);
         std::vector<std::uint8_t> fragmentContent = _contentLoader->load(fragmentShaderName);
 
@@ -54,7 +54,7 @@ namespace BGLRenderer
         {
             return _loadedTextures[name];
         }
-        
+
         _logger.debug("Loading texture from: {}", name);
 
         std::vector<std::uint8_t> textureFileContent = _contentLoader->load(name);
@@ -63,13 +63,13 @@ namespace BGLRenderer
         return texture;
     }
 
-    std::shared_ptr<OpenGLRenderObject> AssetsLoader::loadModel(const std::string& name)
+    std::shared_ptr<OpenGLRenderObject> AssetsLoader::loadModel(const std::string& name, const std::shared_ptr<OpenGLProgram>& program)
     {
         HighResolutionTimer loadingTimer;
 
         std::string path = ("assets/" + name);
         std::string basePath = name.find('/') == std::string::npos ? name : name.substr(0, name.find_last_of('/') + 1);
-        
+
         _logger.debug("Loading model: {}, base path: {}", path, basePath);
 
         cgltf_options options{};
@@ -85,8 +85,6 @@ namespace BGLRenderer
 
         std::shared_ptr<OpenGLRenderObject> renderObject = std::make_shared<OpenGLRenderObject>();
 
-        std::shared_ptr<OpenGLProgram> defaultProgram = loadProgram("shaders/basic");
-
         for (cgltf_size meshIndex = 0; meshIndex < data->meshes_count; ++meshIndex)
         {
             cgltf_mesh* mesh = &data->meshes[meshIndex];
@@ -96,13 +94,14 @@ namespace BGLRenderer
                 cgltf_primitive* primitive = &mesh->primitives[primitiveIndex];
                 ASSERT(primitive->type == cgltf_primitive_type_triangles, "Primivite type must be triangles!");
 
-                std::vector<GLfloat> vertices;
+                std::vector<GLfloat> positions;
                 std::vector<GLfloat> normals;
+                std::vector<GLfloat> tangents;
                 std::vector<GLfloat> uvs0;
                 std::vector<GLuint> indices;
                 indices.reserve(primitive->indices->count);
 
-                std::shared_ptr<OpenGLMaterial> openGLMaterial = std::make_shared<OpenGLMaterial>(defaultProgram);
+                std::shared_ptr<OpenGLMaterial> openGLMaterial = std::make_shared<OpenGLMaterial>(program);
                 if (primitive->material != nullptr)
                 {
                     loadMaterialFromCGLTFMaterial(name, openGLMaterial, basePath, primitive->material);
@@ -114,11 +113,15 @@ namespace BGLRenderer
 
                     if (attribute->type == cgltf_attribute_type_position)
                     {
-                        loadAttributeDataIntoVector(vertices, attribute, 3);
+                        loadAttributeDataIntoVector(positions, attribute, 3);
                     }
                     else if (attribute->type == cgltf_attribute_type_normal)
                     {
                         loadAttributeDataIntoVector(normals, attribute, 3);
+                    }
+                    else if (attribute->type == cgltf_attribute_type_tangent)
+                    {
+                        loadTangentAttributeDataIntoVector(tangents, attribute);
                     }
                     else if (attribute->type == cgltf_attribute_type_texcoord)
                     {
@@ -134,9 +137,26 @@ namespace BGLRenderer
                 }
 
                 std::shared_ptr<OpenGLMesh> openGLMesh = std::make_shared<OpenGLMesh>();
-                openGLMesh->setVertices(vertices.data(), vertices.size());
+                openGLMesh->setVertices(positions.data(), positions.size());
+
+                if (normals.empty())
+                {
+                    OpenGLMesh::calculateNormals(normals, positions, indices);
+                }
                 openGLMesh->setNormals(normals.data(), normals.size());
+
+                if (uvs0.empty())
+                {
+                    uvs0.resize(positions.size() / 3 * 2, 0.0f);
+                }
                 openGLMesh->setUVs0(uvs0.data(), uvs0.size());
+
+                if (tangents.empty())
+                {
+                    OpenGLMesh::calculateTangents(tangents, positions, uvs0, indices);
+                }
+                openGLMesh->setTangents(tangents.data(), tangents.size());
+
                 openGLMesh->setIndices(indices.data(), indices.size());
 
                 RenderObjectSubmesh submesh;
@@ -259,6 +279,9 @@ namespace BGLRenderer
     {
         ASSERT(components > 0 && components <= 4, "Components must be in range 1-4");
 
+        data.clear();
+        data.reserve(attribute->data->count * components);
+
         for (cgltf_size bufferIndex = 0; bufferIndex < attribute->data->count; ++bufferIndex)
         {
             cgltf_float v[4] = {0, 0, 0, 0};
@@ -272,6 +295,29 @@ namespace BGLRenderer
             {
                 data.push_back(v[i]);
             }
+        }
+    }
+
+    void AssetsLoader::loadTangentAttributeDataIntoVector(std::vector<GLfloat>& data, const cgltf_attribute* attribute)
+    {
+        data.clear();
+        data.reserve(attribute->data->count * 3);
+
+        for (cgltf_size bufferIndex = 0; bufferIndex < attribute->data->count; ++bufferIndex)
+        {
+            cgltf_float v[4] = {0, 0, 0, 0};
+            if (!cgltf_accessor_read_float(attribute->data, bufferIndex, v, 4))
+            {
+                _logger.error("Couldn't read buffer data, attribute name: {}, index: {}", attribute->name, bufferIndex);
+                break;
+            }
+
+            glm::vec3 tangent = {v[0], v[1], v[2]};
+            tangent *= v[3];
+
+            data.push_back(tangent.x);
+            data.push_back(tangent.y);
+            data.push_back(tangent.z);
         }
     }
 }

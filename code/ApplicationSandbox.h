@@ -28,7 +28,5 @@ namespace BGLRenderer
         float _cameraYaw = 0.0f;
 
         float _cameraSpeed = 20.0f;
-
-        void printMatrices();
     };
 }

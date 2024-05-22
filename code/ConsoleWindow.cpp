@@ -23,6 +23,11 @@ namespace BGLRenderer
     {
         ImGui::Begin("Console");
 
+        if (ImGui::Button("Clear"))
+        {
+            _messages.clear();
+        }
+
         if (ImGui::BeginChild("ScrollRegion##"))
         {
             for (auto& message : _messages)

@@ -22,7 +22,7 @@ namespace BGLRenderer
 
         std::shared_ptr<OpenGLTexture2D> loadTexture(const std::string& name);
 
-        std::shared_ptr<OpenGLRenderObject> loadModel(const std::string& name);
+        std::shared_ptr<OpenGLRenderObject> loadModel(const std::string& name, const std::shared_ptr<OpenGLProgram>& program);
 
     private:
         Log _logger{"AssetsLoader"};
@@ -39,5 +39,6 @@ namespace BGLRenderer
         void loadCGLTFMaterialTextureToSlot(const std::string& modelName, const std::shared_ptr<OpenGLMaterial>& target, const std::string& slotName, const std::string& basePath, const cgltf_texture* texture);
 
         void loadAttributeDataIntoVector(std::vector<GLfloat>& data, const cgltf_attribute* attribute, int components);
+        void loadTangentAttributeDataIntoVector(std::vector<GLfloat>& data, const cgltf_attribute* attribute);
     };
 }

@@ -2,8 +2,6 @@
 
 #include "OpenGLBase.h"
 
-#include <glm.hpp>
-
 namespace BGLRenderer
 {
     class OpenGLMesh
@@ -33,5 +31,9 @@ namespace BGLRenderer
         GLuint _indicesBufferObject = 0;
 
         GLuint _indicesCount;
+
+    public:
+        static void calculateNormals(std::vector<GLfloat>& target, const std::vector<GLfloat>& positions, const std::vector<GLuint>& indices);
+        static void calculateTangents(std::vector<GLfloat>& target, const std::vector<GLfloat>& positions, const std::vector<GLfloat>& uvs, const std::vector<GLuint>& indices);
     };
 }

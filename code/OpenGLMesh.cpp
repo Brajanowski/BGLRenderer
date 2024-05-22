@@ -1,5 +1,7 @@
 ﻿#include "OpenGLMesh.h"
 
+#include "GLMMath.h"
+
 namespace BGLRenderer
 {
     OpenGLMesh::OpenGLMesh()
@@ -87,5 +89,114 @@ namespace BGLRenderer
         GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * count, indices, GL_STATIC_DRAW));
 
         _indicesCount = count;
+    }
+
+    void OpenGLMesh::calculateNormals(std::vector<GLfloat>& target, const std::vector<GLfloat>& positions, const std::vector<GLuint>& indices)
+    {
+        ASSERT(indices.size() % 3 == 0, "Invalid indices buffer size! Must be dividable by 3");
+
+        int vertexCount = positions.size() / 3;
+        int trianglesCount = indices.size() / 3;
+        target.resize(positions.size(), 0.0f);
+
+        for (int i = 0; i < trianglesCount; ++i)
+        {
+            int i0 = indices[i * 3];
+            int i1 = indices[i * 3 + 1];
+            int i2 = indices[i * 3 + 2];
+
+            glm::vec3 a = {positions[i0 * 3], positions[i0 * 3 + 1], positions[i0 * 3 + 2]};
+            glm::vec3 b = {positions[i1 * 3], positions[i1 * 3 + 1], positions[i1 * 3 + 2]};
+            glm::vec3 c = {positions[i2 * 3], positions[i2 * 3 + 1], positions[i2 * 3 + 2]};
+
+            glm::vec3 ab = b - a;
+            glm::vec3 ac = c - a;
+            glm::vec3 normal = glm::normalize(glm::cross(ab, ac));
+
+            target[i0 * 3] += normal.x;
+            target[i0 * 3 + 1] += normal.y;
+            target[i0 * 3 + 2] += normal.z;
+
+            target[i1 * 3] += normal.x;
+            target[i1 * 3 + 1] += normal.y;
+            target[i1 * 3 + 2] += normal.z;
+
+            target[i2 * 3] += normal.x;
+            target[i2 * 3 + 1] += normal.y;
+            target[i2 * 3 + 2] += normal.z;
+        }
+
+        for (int i = 0; i < vertexCount; ++i)
+        {
+            glm::vec3 normal = glm::normalize(glm::vec3(target[i * 3], target[i * 3 + 1], target[i * 3 + 2]));
+
+            target[i * 3] = normal.x;
+            target[i * 3 + 1] = normal.y;
+            target[i * 3 + 2] = normal.z;
+        }
+    }
+
+    void OpenGLMesh::calculateTangents(std::vector<GLfloat>& target, const std::vector<GLfloat>& positions, const std::vector<GLfloat>& uvs, const std::vector<GLuint>& indices)
+    {
+        ASSERT(indices.size() % 3 == 0, "Invalid indices buffer size! Must be dividable by 3");
+
+        target.resize(positions.size(), 1.0f);
+
+        if (uvs.size() / 2 != positions.size() / 3)
+        {
+            openGLLogger.error("UVs is not the same size as positions! Resizing tangents vector to size of positions and returning!");
+            return;
+        }
+
+        int vertexCount = positions.size() / 3;
+        int trianglesCount = indices.size() / 3;
+        target.resize(positions.size() / 3 * 4, 0.0f);
+
+        std::vector<glm::vec3> tangentsSum(vertexCount, glm::vec3(0, 0, 0));
+        std::vector<glm::vec3> biTangentsSum(vertexCount, glm::vec3(0, 0, 0));
+
+        for (int i = 0; i < trianglesCount; ++i)
+        {
+            int i0 = indices[i * 3];
+            int i1 = indices[i * 3 + 1];
+            int i2 = indices[i * 3 + 2];
+
+            glm::vec3 a = {positions[i0 * 3], positions[i0 * 3 + 1], positions[i0 * 3 + 2]};
+            glm::vec3 b = {positions[i1 * 3], positions[i1 * 3 + 1], positions[i1 * 3 + 2]};
+            glm::vec3 c = {positions[i2 * 3], positions[i2 * 3 + 1], positions[i2 * 3 + 2]};
+
+            glm::vec2 uv0 = {uvs[i0 * 2], uvs[i0 * 2 + 1]};
+            glm::vec2 uv1 = {uvs[i1 * 2], uvs[i1 * 2 + 1]};
+            glm::vec2 uv2 = {uvs[i2 * 2], uvs[i2 * 2 + 1]};
+
+            glm::vec3 edge1 = b - a;
+            glm::vec3 edge2 = c - a;
+            glm::vec2 deltaUV1 = uv1 - uv0;
+            glm::vec2 deltaUV2 = uv2 - uv0;
+
+            float determinant = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+
+            glm::vec3 tangent;
+            tangent.x = determinant * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+            tangent.y = determinant * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+            tangent.z = determinant * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+            tangent = glm::normalize(tangent);
+
+            tangentsSum[i0] += tangent;
+            tangentsSum[i1] += tangent;
+            tangentsSum[i2] += tangent;
+        }
+
+        for (int i = 0; i < vertexCount; ++i)
+        {
+            glm::vec3 tangent = glm::normalize(tangentsSum[i]);
+
+            float handedness = 1.0f;
+
+            target[i * 4] = tangent.x;
+            target[i * 4 + 1] = tangent.y;
+            target[i * 4 + 2] = tangent.z;
+            target[i * 4 + 3] = handedness;
+        }
     }
 }

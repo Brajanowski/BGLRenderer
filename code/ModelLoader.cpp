@@ -1,69 +1,22 @@
-﻿#include "AssetsLoader.h"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+﻿#include "ModelLoader.h"
 
 #define CGLTF_IMPLEMENTATION
 #include "cgltf.h"
+
 #include "Timer.h"
 
 namespace BGLRenderer
 {
-    AssetsLoader::AssetsLoader(const std::shared_ptr<AssetContentLoader>& contentLoader) :
-        _contentLoader(contentLoader)
+    ModelLoader::ModelLoader(const std::shared_ptr<AssetContentLoader>& contentLoader,
+                             const std::shared_ptr<TextureLoader>& textureLoader,
+                             const std::shared_ptr<ObjectInMemoryCache<std::string, OpenGLTexture2D>>& texturesCache) :
+        _contentLoader(contentLoader),
+        _textureLoader(textureLoader),
+        _texturesCache(texturesCache)
     {
-        //stbi_set_flip_vertically_on_load(true);
     }
 
-    void AssetsLoader::registerTexture(const std::string& name, const std::shared_ptr<OpenGLTexture2D>& texture)
-    {
-        if (isTextureLoaded(name))
-        {
-            _logger.error("Texture with given name \"{}\" is already registered!", name);
-            return;
-        }
-
-        _loadedTextures[name] = texture;
-    }
-
-    std::shared_ptr<OpenGLProgram> AssetsLoader::loadProgram(const std::string& name)
-    {
-        return loadProgram(name + ".vert", name + ".frag");
-    }
-
-    std::shared_ptr<OpenGLProgram> AssetsLoader::loadProgram(const std::string& vertexShaderName, const std::string& fragmentShaderName)
-    {
-        std::string programName = vertexShaderName + "+" + fragmentShaderName;
-
-        if (_loadedPrograms.contains(programName))
-        {
-            return _loadedPrograms[programName];
-        }
-
-        std::vector<std::uint8_t> vertexContent = _contentLoader->load(vertexShaderName);
-        std::vector<std::uint8_t> fragmentContent = _contentLoader->load(fragmentShaderName);
-
-        std::shared_ptr<OpenGLProgram> program = std::make_shared<OpenGLProgram>(std::string(vertexContent.begin(), vertexContent.end()), std::string(fragmentContent.begin(), fragmentContent.end()));
-        _loadedPrograms[programName] = program;
-        return program;
-    }
-
-    std::shared_ptr<OpenGLTexture2D> AssetsLoader::loadTexture(const std::string& name)
-    {
-        if (isTextureLoaded(name))
-        {
-            return _loadedTextures[name];
-        }
-
-        _logger.debug("Loading texture from: {}", name);
-
-        std::vector<std::uint8_t> textureFileContent = _contentLoader->load(name);
-        std::shared_ptr<OpenGLTexture2D> texture = loadTextureFromImageData(textureFileContent);
-        registerTexture(name, texture);
-        return texture;
-    }
-
-    std::shared_ptr<OpenGLRenderObject> AssetsLoader::loadModel(const std::string& name, const std::shared_ptr<OpenGLProgram>& program)
+    std::shared_ptr<OpenGLRenderObject> ModelLoader::loadModel(const std::string& name, const std::shared_ptr<OpenGLProgram>& program)
     {
         HighResolutionTimer loadingTimer;
 
@@ -172,50 +125,7 @@ namespace BGLRenderer
         return renderObject;
     }
 
-    std::shared_ptr<OpenGLTexture2D> AssetsLoader::loadTextureFromImageData(const std::uint8_t* bytes, size_t size)
-    {
-        ASSERT(bytes != nullptr, "Bytes is nullptr");
-        ASSERT(size > 0, "Invalid size");
-
-        int width;
-        int height;
-        int components;
-        float* imageData = stbi_loadf_from_memory(bytes, size, &width, &height, &components, 0);
-        ASSERT(imageData != nullptr, "Failed to load image data");
-
-        GLenum internalFormat;
-        GLenum dataFormat = GL_RGBA;
-
-        bool gammaCorrection = false;
-
-        if (components == 1)
-        {
-            internalFormat = dataFormat = GL_RED;
-        }
-        else if (components == 3)
-        {
-            internalFormat = gammaCorrection ? GL_SRGB : GL_RGB;
-            dataFormat = GL_RGB;
-        }
-        else if (components == 4)
-        {
-            internalFormat = gammaCorrection ? GL_SRGB_ALPHA : GL_RGBA;
-            dataFormat = GL_RGBA;
-        }
-
-        std::shared_ptr<OpenGLTexture2D> texture = std::make_shared<OpenGLTexture2D>(width, height, internalFormat);
-        texture->setPixels(dataFormat, (GLfloat*)imageData);
-
-        stbi_image_free(imageData);
-        return texture;
-    }
-
-    std::shared_ptr<OpenGLTexture2D> AssetsLoader::loadTextureFromImageData(const std::vector<std::uint8_t>& imageFileContent)
-    {
-        return loadTextureFromImageData(imageFileContent.data(), imageFileContent.size());
-    }
-
-    void AssetsLoader::loadMaterialFromCGLTFMaterial(const std::string& modelName, const std::shared_ptr<OpenGLMaterial>& target, const std::string& basePath, const cgltf_material* material)
+    void ModelLoader::loadMaterialFromCGLTFMaterial(const std::string& modelName, const std::shared_ptr<OpenGLMaterial>& target, const std::string& basePath, const cgltf_material* material)
     {
         if (material->pbr_metallic_roughness.base_color_texture.texture != nullptr)
         {
@@ -233,7 +143,7 @@ namespace BGLRenderer
         }
     }
 
-    void AssetsLoader::loadCGLTFMaterialTextureToSlot(const std::string& modelName, const std::shared_ptr<OpenGLMaterial>& target, const std::string& slotName, const std::string& basePath, const cgltf_texture* texture)
+    void ModelLoader::loadCGLTFMaterialTextureToSlot(const std::string& modelName, const std::shared_ptr<OpenGLMaterial>& target, const std::string& slotName, const std::string& basePath, const cgltf_texture* texture)
     {
         std::shared_ptr<OpenGLTexture2D> openGLTexture = nullptr;
 
@@ -242,21 +152,29 @@ namespace BGLRenderer
             std::string uri = texture->image->uri;
             std::string texturePath = basePath + uri;
 
-            openGLTexture = loadTexture(texturePath);
+            if (_texturesCache->exists(texturePath))
+            {
+                openGLTexture = _texturesCache->get(texturePath);
+            }
+            else
+            {
+                openGLTexture = _textureLoader->loadTexture2D(texturePath);
+                _texturesCache->set(texturePath, openGLTexture);
+            }
         }
         else
         {
             std::string textureName = modelName + "+" + texture->image->name;
 
-            if (isTextureLoaded(textureName))
+            if (_texturesCache->exists(textureName))
             {
-                openGLTexture = _loadedTextures[textureName];
+                openGLTexture = _texturesCache->get(textureName);
             }
             else
             {
                 const uint8_t* imageData = cgltf_buffer_view_data(texture->image->buffer_view);
-                openGLTexture = loadTextureFromImageData(imageData, texture->image->buffer_view->buffer->size);
-                registerTexture(textureName, openGLTexture);
+                openGLTexture = _textureLoader->loadTextureFromImageData(imageData, texture->image->buffer_view->buffer->size);
+                _texturesCache->set(textureName, openGLTexture);
             }
         }
 
@@ -275,7 +193,7 @@ namespace BGLRenderer
         target->setTexture2D(slotName, openGLTexture);
     }
 
-    void AssetsLoader::loadAttributeDataIntoVector(std::vector<GLfloat>& data, const cgltf_attribute* attribute, int components)
+    void ModelLoader::loadAttributeDataIntoVector(std::vector<GLfloat>& data, const cgltf_attribute* attribute, int components)
     {
         ASSERT(components > 0 && components <= 4, "Components must be in range 1-4");
 
@@ -298,7 +216,7 @@ namespace BGLRenderer
         }
     }
 
-    void AssetsLoader::loadTangentAttributeDataIntoVector(std::vector<GLfloat>& data, const cgltf_attribute* attribute)
+    void ModelLoader::loadTangentAttributeDataIntoVector(std::vector<GLfloat>& data, const cgltf_attribute* attribute)
     {
         data.clear();
         data.reserve(attribute->data->count * 3);

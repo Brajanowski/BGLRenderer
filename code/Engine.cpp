@@ -27,7 +27,7 @@ namespace BGLRenderer
 
         _input = std::make_shared<Input>();
         _assetContentLoader = std::make_shared<AssetContentLoader>();
-        _assetsLoader = std::make_shared<AssetsLoader>(_assetContentLoader);
+        _assetsLoader = std::make_shared<AssetManager>(_assetContentLoader);
 
         _window = std::make_shared<SDLWindow>(1920, 1080);
         _window->setOnSDLEventCallback([&](const SDL_Event* ev)

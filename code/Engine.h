@@ -5,7 +5,7 @@
 #include "OpenGLRenderer.h"
 #include "SDLWindow.h"
 #include "AssetContentLoader.h"
-#include "AssetsLoader.h"
+#include "AssetManager.h"
 #include "ConsoleWindow.h"
 #include "Input.h"
 #include "Log.h"
@@ -39,7 +39,7 @@ namespace BGLRenderer
         double secondsSinceStart();
 
         inline const std::shared_ptr<Input>& input() const { return _input; }
-        inline const std::shared_ptr<AssetsLoader>& assetsLoader() const { return _assetsLoader; }
+        inline const std::shared_ptr<AssetManager>& assetsLoader() const { return _assetsLoader; }
         
     private:
         Log _logger{"Engine"};
@@ -47,7 +47,7 @@ namespace BGLRenderer
         std::shared_ptr<SDLWindow> _window = nullptr;
         std::shared_ptr<OpenGLRenderer> _renderer = nullptr;
         std::shared_ptr<AssetContentLoader> _assetContentLoader = nullptr;
-        std::shared_ptr<AssetsLoader> _assetsLoader = nullptr;
+        std::shared_ptr<AssetManager> _assetsLoader = nullptr;
         std::shared_ptr<Input> _input = nullptr;
         std::shared_ptr<ConsoleWindow> _consoleWindow = nullptr;
 

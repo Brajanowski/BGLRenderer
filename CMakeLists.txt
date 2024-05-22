@@ -48,13 +48,22 @@ add_executable(BGLrenderer
     code/OpenGLTexture2D.cpp
     code/OpenGLMesh.h
     code/OpenGLMesh.cpp
+    code/OpenGLFramebuffer.h
+    code/OpenGLFramebuffer.cpp
     code/OpenGLRenderObject.h
     code/OpenGLRenderer.h
     code/OpenGLRenderer.cpp
     code/AssetContentLoader.h
     code/AssetContentLoader.cpp
-    code/AssetsLoader.h
-    code/AssetsLoader.cpp
+    code/AssetManager.h
+    code/AssetManager.cpp
+    code/ProgramLoader.h
+    code/ProgramLoader.cpp
+    code/TextureLoader.h
+    code/TextureLoader.cpp
+    code/ModelLoader.h
+    code/ModelLoader.cpp
+    code/ObjectInMemoryCache.h
     code/ApplicationSandbox.h
     code/ApplicationSandbox.cpp
     code/stb_image.h

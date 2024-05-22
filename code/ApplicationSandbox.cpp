@@ -16,8 +16,8 @@ namespace BGLRenderer
         _camera = std::make_shared<PerspectiveCamera>();
         _camera->transform.position = {0.0f, 20.0f, 5.0f};
 
-        _monkey = _engine->assetsLoader()->loadModel("monkey.gltf", _engine->assetsLoader()->loadProgram("shaders/gbuffer_default"));
-        _sponza = _engine->assetsLoader()->loadModel("sponza/sponza.gltf", _engine->assetsLoader()->loadProgram("shaders/gbuffer_default"));
+        _monkey = _engine->assetsLoader()->getModel("monkey.gltf", _engine->assetsLoader()->getProgram("shaders/gbuffer_default"));
+        _sponza = _engine->assetsLoader()->getModel("sponza/sponza.gltf", _engine->assetsLoader()->getProgram("shaders/gbuffer_default"));
 
         const float sponzaScaleFactor = 0.1f;
         glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0), glm::vec3(sponzaScaleFactor, sponzaScaleFactor, sponzaScaleFactor));

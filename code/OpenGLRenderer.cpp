@@ -7,7 +7,7 @@ namespace BGLRenderer
     constexpr int GBufferAlbedoAttachment = 0;
     constexpr int GBufferNormalsAttachment = 1;
 
-    OpenGLRenderer::OpenGLRenderer(const std::shared_ptr<AssetsLoader>& assetsLoader, int frameWidth, int frameHeight) :
+    OpenGLRenderer::OpenGLRenderer(const std::shared_ptr<AssetManager>& assetsLoader, int frameWidth, int frameHeight) :
         _assetsLoader(assetsLoader),
         _frameWidth(frameWidth),
         _frameHeight(frameHeight)
@@ -120,7 +120,7 @@ namespace BGLRenderer
         _quadMesh->setUVs0(uvs, sizeof(uvs) / sizeof(GLfloat));
         _quadMesh->setIndices(indices, sizeof(indices) / sizeof(GLuint));
 
-        _baseColorProgram = _assetsLoader->loadProgram("shaders/base_color");
+        _baseColorProgram = _assetsLoader->getProgram("shaders/base_color");
 
         // GBuffer
         _gbuffer = std::make_shared<OpenGLFramebuffer>(_frameWidth, _frameHeight);
@@ -134,10 +134,10 @@ namespace BGLRenderer
         _lightBuffer->createColorAttachment(GL_RGB);
         _lightBuffer->validate();
 
-        _directionalLightProgram = _assetsLoader->loadProgram("shaders/light_directional");
-        _combineFinalFrameProgram = _assetsLoader->loadProgram("shaders/combine_finalframe");
+        _directionalLightProgram = _assetsLoader->getProgram("shaders/light_directional");
+        _combineFinalFrameProgram = _assetsLoader->getProgram("shaders/combine_finalframe");
 
-        _displayBufferMaterial = std::make_shared<OpenGLMaterial>(_assetsLoader->loadProgram("shaders/basic"));
+        _displayBufferMaterial = std::make_shared<OpenGLMaterial>(_assetsLoader->getProgram("shaders/basic"));
     }
 
     void OpenGLRenderer::gbufferPass()

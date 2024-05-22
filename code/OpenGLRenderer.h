@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "AssetsLoader.h"
+#include "AssetManager.h"
 #include "OpenGLBase.h"
 #include "OpenGLFramebuffer.h"
 #include "OpenGLMaterial.h"
@@ -21,7 +21,7 @@ namespace BGLRenderer
     class OpenGLRenderer
     {
     public:
-        OpenGLRenderer(const std::shared_ptr<AssetsLoader>& assetsLoader, int frameWidth, int frameHeight);
+        OpenGLRenderer(const std::shared_ptr<AssetManager>& assetsLoader, int frameWidth, int frameHeight);
         ~OpenGLRenderer();
 
         void onIMGUI();
@@ -39,7 +39,7 @@ namespace BGLRenderer
     private:
         Log _logger{"Renderer"};
 
-        std::shared_ptr<AssetsLoader> _assetsLoader;
+        std::shared_ptr<AssetManager> _assetsLoader;
         int _frameWidth;
         int _frameHeight;
 

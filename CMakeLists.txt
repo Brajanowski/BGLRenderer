@@ -57,6 +57,8 @@ add_executable(BGLrenderer
     code/AssetContentLoader.cpp
     code/AssetManager.h
     code/AssetManager.cpp
+    code/AssetFileChangesObserver.h
+    code/AssetFileChangesObserver.cpp
     code/ProgramLoader.h
     code/ProgramLoader.cpp
     code/TextureLoader.h

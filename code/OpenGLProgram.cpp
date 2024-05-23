@@ -17,16 +17,100 @@ namespace BGLRenderer
         _vertexShader = createShader(vertexShaderCode, GL_VERTEX_SHADER);
         ASSERT(_vertexShader != 0, "failed to compile vertex shader");
 
+        GL_CALL(glAttachShader(_program, _vertexShader));
+
         openGLLogger.debug("Fragment shader code:\n{}", fragmentShaderCode);
         _fragmentShader = createShader(fragmentShaderCode, GL_FRAGMENT_SHADER);
         ASSERT(_fragmentShader != 0, "failed to compile fragment shader");
+
+        GL_CALL(glAttachShader(_program, _fragmentShader));
 
         link();
     }
 
     OpenGLProgram::~OpenGLProgram()
     {
+        if (_vertexShader != 0)
+        {
+            GL_CALL(glDeleteShader(_vertexShader));
+        }
+
+        if (_fragmentShader != 0)
+        {
+            GL_CALL(glDeleteShader(_fragmentShader));
+        }
+
         GL_CALL(glDeleteProgram(_program));
+    }
+
+    bool OpenGLProgram::tryToUpdateVertexShader(const std::string& shaderCode)
+    {
+        bind();
+
+        GLuint oldShader = _vertexShader;
+        GL_CALL(glDetachShader(_program, oldShader));
+
+        _vertexShader = createShader(shaderCode, GL_VERTEX_SHADER);
+
+        if (_vertexShader == 0)
+        {
+            openGLLogger.error("Failed to update vertex shader!");
+            _vertexShader = oldShader;
+            return false;
+        }
+
+        GL_CALL(glAttachShader(_program, _vertexShader));
+
+        if (!link())
+        {
+            GL_CALL(glDetachShader(_program, _vertexShader));
+            GL_CALL(glDeleteShader(_vertexShader));
+            _vertexShader = oldShader;
+
+            GL_CALL(glAttachShader(_program, _fragmentShader));
+
+            link();
+
+            return false;
+        }
+
+        GL_CALL(glDeleteShader(oldShader));
+        return true;
+    }
+
+    bool OpenGLProgram::tryToUpdateFragmentShader(const std::string& shaderCode)
+    {
+        bind();
+
+        GLuint oldShader = _fragmentShader;
+        GL_CALL(glDetachShader(_program, oldShader));
+
+        _fragmentShader = createShader(shaderCode, GL_FRAGMENT_SHADER);
+
+        if (_fragmentShader == 0)
+        {
+            openGLLogger.error("Failed to update fragment shader!");
+            _fragmentShader = oldShader;
+            return false;
+        }
+
+        GL_CALL(glAttachShader(_program, _fragmentShader));
+
+        if (!link())
+        {
+            GL_CALL(glDetachShader(_program, _fragmentShader));
+            GL_CALL(glDeleteShader(_fragmentShader));
+            _fragmentShader = oldShader;
+
+            GL_CALL(glAttachShader(_program, _fragmentShader));
+            
+            link();
+
+            return false;
+        }
+
+        GL_CALL(glDeleteShader(oldShader));
+        return true;
     }
 
     void OpenGLProgram::bind()
@@ -70,13 +154,10 @@ namespace BGLRenderer
         return location;
     }
 
-    void OpenGLProgram::link()
+    bool OpenGLProgram::link()
     {
         openGLLogger.debug("Linking program...");
-
-        GL_CALL(glAttachShader(_program, _vertexShader));
-        GL_CALL(glAttachShader(_program, _fragmentShader));
-
+        
         GL_CALL(glLinkProgram(_program));
 
         GLint isLinked = GL_FALSE;
@@ -92,15 +173,17 @@ namespace BGLRenderer
 
             openGLLogger.debug("Shader linking error:\n{}", infoLog.data());
 
-            ASSERT(false, "error occured while linking program");
+            return false;
         }
+
+        return true;
     }
 
     GLuint OpenGLProgram::createShader(const std::string& code, GLuint shaderType)
     {
         GLuint shader = glCreateShader(shaderType);
 
-        const char *sourceCString = code.c_str();
+        const char* sourceCString = code.c_str();
         GLint sourceLength = (GLint)code.length();
 
         GL_CALL(glShaderSource(shader, 1, &sourceCString, &sourceLength));

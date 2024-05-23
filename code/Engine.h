@@ -39,7 +39,7 @@ namespace BGLRenderer
         double secondsSinceStart();
 
         inline const std::shared_ptr<Input>& input() const { return _input; }
-        inline const std::shared_ptr<AssetManager>& assetsLoader() const { return _assetsLoader; }
+        inline const std::shared_ptr<AssetManager>& assetsLoader() const { return _assetManager; }
         
     private:
         Log _logger{"Engine"};
@@ -47,7 +47,7 @@ namespace BGLRenderer
         std::shared_ptr<SDLWindow> _window = nullptr;
         std::shared_ptr<OpenGLRenderer> _renderer = nullptr;
         std::shared_ptr<AssetContentLoader> _assetContentLoader = nullptr;
-        std::shared_ptr<AssetManager> _assetsLoader = nullptr;
+        std::shared_ptr<AssetManager> _assetManager = nullptr;
         std::shared_ptr<Input> _input = nullptr;
         std::shared_ptr<ConsoleWindow> _consoleWindow = nullptr;
 

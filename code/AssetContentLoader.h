@@ -2,17 +2,23 @@
 
 #include "Base.h"
 
-#include <string>
 #include <vector>
+#include <filesystem>
 
 namespace BGLRenderer
 {
     class AssetContentLoader
     {
     public:
-        std::vector<std::uint8_t> load(const std::string& path);
+        bool fileExists(const std::filesystem::path& path);
+        
+        std::vector<std::uint8_t> load(const std::filesystem::path& path);
+
+        std::filesystem::file_time_type getLastWriteTime(const std::filesystem::path& path);
 
     private:
-        std::string _assetsFolderPath = "./assets/";
+        std::filesystem::path _assetsFolderPath = "./assets/";
+
+        std::filesystem::path getAssetPath(const std::filesystem::path& path);
     };
 }

@@ -4,6 +4,7 @@
 #include "TextureLoader.h"
 #include "ProgramLoader.h"
 #include "ModelLoader.h"
+#include "AssetFileChangesObserver.h"
 
 #include "ObjectInMemoryCache.h"
 
@@ -20,6 +21,8 @@ namespace BGLRenderer
     {
     public:
         AssetManager(const std::shared_ptr<AssetContentLoader>& contentLoader);
+
+        void tick();
 
         void registerTexture(const std::string& name, const std::shared_ptr<OpenGLTexture2D>& texture);
         void registerProgram(const std::string& name, const std::shared_ptr<OpenGLProgram>& program);
@@ -46,6 +49,7 @@ namespace BGLRenderer
     private:
         Log _logger{"AssetsLoader"};
         std::shared_ptr<AssetContentLoader> _contentLoader;
+        AssetFileChangesObserver _assetFileChangesObserver;
 
         std::shared_ptr<ObjectInMemoryCache<std::string, OpenGLProgram>> _programCache;
         std::shared_ptr<ObjectInMemoryCache<std::string, OpenGLTexture2D>> _texture2DCache;
@@ -54,5 +58,7 @@ namespace BGLRenderer
         std::shared_ptr<ProgramLoader> _programLoader;
         std::shared_ptr<TextureLoader> _textureLoader;
         std::shared_ptr<ModelLoader> _modelLoader;
+
+        void addProgramShadersListeners(const std::shared_ptr<OpenGLProgram>& program, const std::string& vertexShaderName, const std::string& fragmentShaderName);
     };
 }

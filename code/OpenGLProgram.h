@@ -14,6 +14,9 @@ namespace BGLRenderer
         OpenGLProgram(const std::string& vertexShaderCode, const std::string& fragmentShaderCode);
         ~OpenGLProgram();
 
+        bool tryToUpdateVertexShader(const std::string& shaderCode);
+        bool tryToUpdateFragmentShader(const std::string& shaderCode);
+
         void bind();
 
         void setInt(GLint location, int value);
@@ -24,13 +27,14 @@ namespace BGLRenderer
         void setMatrix4x4(GLint location, const glm::mat4x4& value);
 
         GLint getUniformLocation(const std::string& name);
+
     private:
         GLuint _program;
         GLuint _fragmentShader;
         GLuint _vertexShader;
 
-        void link();
+        bool link();
 
-        GLuint createShader(const std::string &code, GLuint shaderType);
+        GLuint createShader(const std::string& code, GLuint shaderType);
     };
 }

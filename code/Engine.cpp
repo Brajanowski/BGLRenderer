@@ -27,7 +27,7 @@ namespace BGLRenderer
 
         _input = std::make_shared<Input>();
         _assetContentLoader = std::make_shared<AssetContentLoader>();
-        _assetsLoader = std::make_shared<AssetManager>(_assetContentLoader);
+        _assetManager = std::make_shared<AssetManager>(_assetContentLoader);
 
         _window = std::make_shared<SDLWindow>(1920, 1080);
         _window->setOnSDLEventCallback([&](const SDL_Event* ev)
@@ -36,7 +36,7 @@ namespace BGLRenderer
             _input->processSDLEvent(ev);
         });
 
-        _renderer = std::make_shared<OpenGLRenderer>(_assetsLoader, 1920, 1080);
+        _renderer = std::make_shared<OpenGLRenderer>(_assetManager, 1920, 1080);
         _window->setOnWindowResizedCallback([&](int width, int height)
         {
             _renderer->resizeFrame(width, height);
@@ -77,6 +77,7 @@ namespace BGLRenderer
             _window->processEvents();
 
             _application->onUpdate(static_cast<float>(deltaTime));
+            _assetManager->tick();
 
             renderTimer.restart();
             _renderer->beginFrame();
@@ -99,7 +100,7 @@ namespace BGLRenderer
 
         shutdownImgui();
 
-        _assetsLoader.reset();
+        _assetManager.reset();
         _assetContentLoader.reset();
         _renderer.reset();
         _input.reset();

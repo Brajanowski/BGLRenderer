@@ -40,7 +40,7 @@ void main()
 
     float spec = pow(max(0.0, dot(lightDirReflected, viewDirection)), 32);
     float specularStrength = 0.5;
-    
+
     float nDotL = max(0, dot(surfaceNormal, normalize(-lightDir)));
 
     vec3 diffuse = u_color * u_intensity * nDotL;

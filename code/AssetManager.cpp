@@ -4,6 +4,7 @@ namespace BGLRenderer
 {
     AssetManager::AssetManager(const std::shared_ptr<AssetContentLoader>& contentLoader) :
         _contentLoader(contentLoader),
+        _assetFileChangesObserver(contentLoader),
         _programCache(std::make_shared<ObjectInMemoryCache<std::string, OpenGLProgram>>()),
         _texture2DCache(std::make_shared<ObjectInMemoryCache<std::string, OpenGLTexture2D>>()),
         _modelCache(std::make_shared<ObjectInMemoryCache<std::string, OpenGLRenderObject>>()),
@@ -11,6 +12,11 @@ namespace BGLRenderer
         _textureLoader(std::make_shared<TextureLoader>(contentLoader)),
         _modelLoader(std::make_shared<ModelLoader>(contentLoader, _textureLoader, _texture2DCache))
     {
+    }
+
+    void AssetManager::tick()
+    {
+        _assetFileChangesObserver.tick();
     }
 
     void AssetManager::registerTexture(const std::string& name, const std::shared_ptr<OpenGLTexture2D>& texture)
@@ -58,6 +64,7 @@ namespace BGLRenderer
 
         std::shared_ptr<OpenGLProgram> program = _programLoader->loadProgram(vertexShaderName, fragmentShaderName);
         registerProgram(name, program);
+        addProgramShadersListeners(program, vertexShaderName, fragmentShaderName);
         return program;
     }
 
@@ -72,6 +79,7 @@ namespace BGLRenderer
 
         std::shared_ptr<OpenGLProgram> program = _programLoader->loadProgram(vertexShaderName, fragmentShaderName);
         registerProgram(programName, program);
+        addProgramShadersListeners(program, vertexShaderName, fragmentShaderName);
         return program;
     }
 
@@ -99,5 +107,22 @@ namespace BGLRenderer
         std::shared_ptr<OpenGLRenderObject> renderObject = _modelLoader->loadModel(name, program);
         registerModel(name, renderObject);
         return renderObject;
+    }
+
+    void AssetManager::addProgramShadersListeners(const std::shared_ptr<OpenGLProgram>& program, const std::string& vertexShaderName, const std::string& fragmentShaderName)
+    {
+        _assetFileChangesObserver.listenFileChanged(vertexShaderName, [program=program, &logger=_logger, &programLoader=_programLoader](const std::filesystem::path& path, const std::filesystem::file_time_type& time)
+        {
+            std::string shaderName = path.string();
+            logger.debug("Vertex shader file changed, trying to update: {}", shaderName);
+            programLoader->tryToUpdateVertexShader(program, shaderName);
+        });
+
+        _assetFileChangesObserver.listenFileChanged(fragmentShaderName, [program=program, &logger=_logger, &programLoader=_programLoader](const std::filesystem::path& path, const std::filesystem::file_time_type& time)
+        {
+            std::string shaderName = path.string();
+            logger.debug("Fragment shader file changed, trying to update: {}", shaderName);
+            programLoader->tryToUpdateFragmentShader(program, shaderName);
+        });
     }
 }

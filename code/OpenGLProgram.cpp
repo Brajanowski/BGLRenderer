@@ -7,7 +7,9 @@
 namespace BGLRenderer
 {
     OpenGLProgram::OpenGLProgram(const std::string& name, const std::string& vertexShaderCode, const std::string& fragmentShaderCode) :
-        _name(name)
+        _name(name),
+        _vertexShaderCode(vertexShaderCode),
+        _fragmentShaderCode(fragmentShaderCode)
     {
         openGLLogger.debug("Creating OpenGL program \"{}\":", name);
 
@@ -88,6 +90,8 @@ namespace BGLRenderer
         }
 
         GL_CALL(glDeleteShader(oldShader));
+
+        _vertexShaderCode = shaderCode;
         return true;
     }
 
@@ -123,6 +127,8 @@ namespace BGLRenderer
         }
 
         GL_CALL(glDeleteShader(oldShader));
+
+        _fragmentShaderCode = shaderCode;
         return true;
     }
 

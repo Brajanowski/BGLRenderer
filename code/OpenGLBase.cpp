@@ -50,7 +50,9 @@ namespace BGLRenderer
 
         if (error != GL_NO_ERROR)
         {
-            openGLLogger.error("{}: {}: {}", filename, line, openglErrorToString(error));
+            (void)filename;
+            (void)line;
+            //openGLLogger.error("{}: {}: {}", filename, line, openglErrorToString(error));
         }
 
         if constexpr (Debug::assertOpenGLCall)

@@ -16,16 +16,8 @@ uniform vec3 u_cameraDirection;
 
 uniform mat4 u_inverseViewProjection;
 
-vec3 decodeWorldPosition(float depthValue, vec2 clipPosition, mat4 inverseViewProjection)
-{
-    vec4 clipSpace;
-    clipSpace.xy = clipPosition;
-    clipSpace.z = depthValue;
-    clipSpace.w = 1.0;
-
-    vec4 homogeneousPosition = inverseViewProjection * clipSpace;
-    return homogeneousPosition.xyz / homogeneousPosition.w;
-}
+#include "depth_utils.glsl"
+#include "lighting.glsl"
 
 void main()
 {
@@ -36,15 +28,18 @@ void main()
     vec3 surfaceNormal = normalize(texture2D(u_normal, uv0).xyz * 2.0 - 1);
     vec3 viewDirection = normalize(u_cameraPosition - worldPosition);
 
-    vec3 lightDirReflected = reflect(lightDir, surfaceNormal);
+    DirectionalLight light;
+    light.color = u_color;
+    light.intensity = u_intensity;
+    light.direction = u_direction;
 
-    float spec = pow(max(0.0, dot(lightDirReflected, viewDirection)), 32);
-    float specularStrength = 0.5;
+    SurfaceDetails surface;
+    surface.color = vec3(1, 1, 1);
+    surface.normal = surfaceNormal;
 
-    float nDotL = max(0, dot(surfaceNormal, normalize(-lightDir)));
+    ViewDetails view;
+    view.direction = viewDirection;
 
-    vec3 diffuse = u_color * u_intensity * nDotL;
-    vec3 specular = vec3(spec) * specularStrength;
-
-    fragColor = vec4(diffuse + specular, 1.0);
+    vec3 lighting = calculateDirectionalLight(light, surface, view);
+    fragColor = vec4(lighting, 1.0);
 }

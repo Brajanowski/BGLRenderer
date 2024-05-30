@@ -9,7 +9,7 @@ namespace BGLRenderer
 {
     namespace Debug
     {
-        constexpr bool LoadSponza = true;
+        constexpr bool LoadSponza = false;
     }
     
     ApplicationSandbox::ApplicationSandbox()

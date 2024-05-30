@@ -34,11 +34,17 @@ namespace BGLRenderer
 
         inline bool hasErrors() const { return _hasErrors; }
 
+        inline const std::string& vertexShaderCode() const { return _vertexShaderCode; }
+        inline const std::string& fragmentShaderCode() const { return _fragmentShaderCode; }
+
     private:
         std::string _name;
         GLuint _program;
         GLuint _fragmentShader;
         GLuint _vertexShader;
+
+        std::string _vertexShaderCode;
+        std::string _fragmentShaderCode;
 
         PublisherEmpty _programLinkedPublisher{};
 

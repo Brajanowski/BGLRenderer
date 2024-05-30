@@ -6,22 +6,35 @@
 
 namespace BGLRenderer
 {
-    OpenGLProgram::OpenGLProgram(const std::string& vertexShaderCode, const std::string& fragmentShaderCode)
+    OpenGLProgram::OpenGLProgram(const std::string& name, const std::string& vertexShaderCode, const std::string& fragmentShaderCode) :
+        _name(name)
     {
-        openGLLogger.debug("Creating OpenGL program:");
+        openGLLogger.debug("Creating OpenGL program \"{}\":", name);
 
         _program = glCreateProgram();
-        ASSERT(_program != 0, "failed to create opengl program");
+        ASSERT(_program != 0, "Failed to create opengl program");
 
         openGLLogger.debug("Vertex shader code:\n{}", vertexShaderCode);
         _vertexShader = createShader(vertexShaderCode, GL_VERTEX_SHADER);
-        ASSERT(_vertexShader != 0, "failed to compile vertex shader");
+
+        if (_vertexShader == 0)
+        {
+            openGLLogger.error("Failed to compile vertex shader for program \"{}\"", name);
+            _hasErrors = true;
+            return;
+        }
 
         GL_CALL(glAttachShader(_program, _vertexShader));
 
         openGLLogger.debug("Fragment shader code:\n{}", fragmentShaderCode);
         _fragmentShader = createShader(fragmentShaderCode, GL_FRAGMENT_SHADER);
-        ASSERT(_fragmentShader != 0, "failed to compile fragment shader");
+
+        if (_fragmentShader == 0)
+        {
+            openGLLogger.error("Failed to compile fragment shader for program \"{}\"", name);
+            _hasErrors = true;
+            return;
+        }
 
         GL_CALL(glAttachShader(_program, _fragmentShader));
 
@@ -103,7 +116,7 @@ namespace BGLRenderer
             _fragmentShader = oldShader;
 
             GL_CALL(glAttachShader(_program, _fragmentShader));
-            
+
             link();
 
             return false;
@@ -120,32 +133,32 @@ namespace BGLRenderer
 
     void OpenGLProgram::setInt(GLint location, int value)
     {
-        GL_CALL(glUniform1i(location, value));
+        glUniform1i(location, value);
     }
 
     void OpenGLProgram::setFloat(GLint location, float value)
     {
-        GL_CALL(glUniform1f(location, value));
+        glUniform1f(location, value);
     }
 
     void OpenGLProgram::setVector2(GLint location, const glm::vec2& value)
     {
-        GL_CALL(glUniform2f(location, value.x, value.y));
+        glUniform2f(location, value.x, value.y);
     }
 
     void OpenGLProgram::setVector3(GLint location, const glm::vec3& value)
     {
-        GL_CALL(glUniform3f(location, value.x, value.y, value.z));
+        glUniform3f(location, value.x, value.y, value.z);
     }
 
     void OpenGLProgram::setVector4(GLint location, const glm::vec4& value)
     {
-        GL_CALL(glUniform4f(location, value.x, value.y, value.z, value.w));
+        glUniform4f(location, value.x, value.y, value.z, value.w);
     }
 
     void OpenGLProgram::setMatrix4x4(GLint location, const glm::mat4x4& value)
     {
-        GL_CALL(glUniformMatrix4fv(location, 1, GL_FALSE, const_cast<float*>(glm::value_ptr(value))));
+        glUniformMatrix4fv(location, 1, GL_FALSE, const_cast<float*>(glm::value_ptr(value)));
     }
 
     GLint OpenGLProgram::getUniformLocation(const std::string& name)
@@ -157,7 +170,7 @@ namespace BGLRenderer
     bool OpenGLProgram::link()
     {
         openGLLogger.debug("Linking program...");
-        
+
         GL_CALL(glLinkProgram(_program));
 
         GLint isLinked = GL_FALSE;
@@ -171,11 +184,16 @@ namespace BGLRenderer
             std::vector<GLchar> infoLog(maxLength);
             GL_CALL(glGetProgramInfoLog(_program, maxLength, &maxLength, infoLog.data()));
 
-            openGLLogger.debug("Shader linking error:\n{}", infoLog.data());
+            openGLLogger.debug("Program \"{}\" linking error:\n{}", _name, infoLog.data());
 
+            _hasErrors = true;
             return false;
         }
+        _hasErrors = false;
 
+        openGLLogger.debug("Program \"{}\" successfully linked!", _name);
+
+        programLinkedPublisher().publish();
         return true;
     }
 
@@ -204,6 +222,8 @@ namespace BGLRenderer
             glDeleteShader(shader);
             return 0;
         }
+
+        openGLLogger.debug("Shader successfully compiled!");
 
         return shader;
     }

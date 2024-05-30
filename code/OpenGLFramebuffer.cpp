@@ -2,7 +2,8 @@
 
 namespace BGLRenderer
 {
-    OpenGLFramebuffer::OpenGLFramebuffer(GLuint width, GLuint height) :
+    OpenGLFramebuffer::OpenGLFramebuffer(const std::string& name, GLuint width, GLuint height) :
+        _name(name),
         _width(width),
         _height(height)
     {
@@ -15,31 +16,39 @@ namespace BGLRenderer
         GL_CALL(glDeleteFramebuffers(1, &_id));
     }
 
-    int OpenGLFramebuffer::createColorAttachment(GLenum format)
+    int OpenGLFramebuffer::addColorAttachment(const std::shared_ptr<OpenGLTexture2D>& texture, bool autoResize)
     {
-        std::shared_ptr<OpenGLTexture2D> texture = std::make_shared<OpenGLTexture2D>(_width, _height, format, GL_CLAMP_TO_EDGE, GL_LINEAR);
-
         texture->bind();
         texture->generatePixelsBuffer();
 
         bind();
         GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, (GLenum)(GL_COLOR_ATTACHMENT0 + _colorAttachments.size()), GL_TEXTURE_2D, texture->id(), 0));
 
-        _colorAttachments.push_back(texture);
-        return _colorAttachments.size() - 1;
+        _colorAttachments.push_back({texture, autoResize});
+        return static_cast<int>(_colorAttachments.size() - 1);
     }
 
-    void OpenGLFramebuffer::createDepthAttachment(GLenum format)
+    int OpenGLFramebuffer::createColorAttachment(const std::string& name, GLenum format)
     {
-        std::shared_ptr<OpenGLTexture2D> texture = std::make_shared<OpenGLTexture2D>(_width, _height, format, GL_CLAMP_TO_EDGE, GL_LINEAR);
+        std::shared_ptr<OpenGLTexture2D> texture = std::make_shared<OpenGLTexture2D>(name, _width, _height, format, GL_CLAMP_TO_EDGE, GL_LINEAR);
+        return addColorAttachment(texture);
+    }
 
+    void OpenGLFramebuffer::setDepthAttachment(const std::shared_ptr<OpenGLTexture2D>& texture, bool autoResize)
+    {
         texture->bind();
         texture->generatePixelsBuffer();
 
         bind();
         GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture->id(), 0));
 
-        _depthAttachment = texture;
+        _depthAttachment = {texture, autoResize};
+    }
+
+    void OpenGLFramebuffer::createDepthAttachment(GLenum format)
+    {
+        std::shared_ptr<OpenGLTexture2D> texture = std::make_shared<OpenGLTexture2D>("Depth", _width, _height, format, GL_CLAMP_TO_EDGE, GL_LINEAR);
+        setDepthAttachment(texture);
     }
 
     bool OpenGLFramebuffer::validate()
@@ -70,22 +79,27 @@ namespace BGLRenderer
 
     void OpenGLFramebuffer::resize(GLuint width, GLuint height)
     {
-        for (const auto& texture : _colorAttachments)
+        for (const auto& attachment : _colorAttachments)
         {
-            texture->resize(width, height);
+            if (!attachment.autoResize)
+            {
+                continue;
+            }
+            
+            attachment.texture->resize(width, height);
         }
 
-        if (_depthAttachment != nullptr)
+        if (_depthAttachment.texture != nullptr && _depthAttachment.autoResize)
         {
-            _depthAttachment->resize(width, height);
+            _depthAttachment.texture->resize(width, height);
         }
     }
 
     void OpenGLFramebuffer::bindAttachments()
     {
-        for (int i = 0; i < _colorAttachments.size(); ++i)
+        for (std::size_t i = 0; i < _colorAttachments.size(); ++i)
         {
-            _colorAttachments[i]->bind(i);
+            _colorAttachments[i].texture->bind(static_cast<int>(i));
         }
     }
 }

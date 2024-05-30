@@ -5,15 +5,24 @@
 
 namespace BGLRenderer
 {
+    struct OpenGLFramebufferAttachmentDetails
+    {
+        std::shared_ptr<OpenGLTexture2D> texture;
+        bool autoResize = true;
+    };
+
     class OpenGLFramebuffer
     {
     public:
-        OpenGLFramebuffer(GLuint width, GLuint height);
+        OpenGLFramebuffer(const std::string& name, GLuint width, GLuint height);
         ~OpenGLFramebuffer();
 
-        /// @brief Creates color attachment for this framebuffer, returns attachment index
-        int createColorAttachment(GLenum format);
+        int addColorAttachment(const std::shared_ptr<OpenGLTexture2D>& texture, bool autoResize = false);
 
+        /// @brief Creates color attachment for this framebuffer, returns attachment index
+        int createColorAttachment(const std::string& name, GLenum format);
+
+        void setDepthAttachment(const std::shared_ptr<OpenGLTexture2D>& texture, bool autoResize = false);
         void createDepthAttachment(GLenum format);
 
         bool validate();
@@ -25,15 +34,19 @@ namespace BGLRenderer
 
         void bindAttachments();
 
+        inline const std::string& name() const { return _name; }
+
         inline GLuint id() { return _id; }
-        inline const std::vector<std::shared_ptr<OpenGLTexture2D>>& colorAttachments() const { return _colorAttachments; }
-        inline const std::shared_ptr<OpenGLTexture2D>& depthAttachment() const { return _depthAttachment; }
+        inline const std::vector<OpenGLFramebufferAttachmentDetails>& colorAttachments() const { return _colorAttachments; }
+        inline const OpenGLFramebufferAttachmentDetails& depthAttachment() const { return _depthAttachment; }
 
     private:
+        std::string _name;
         GLuint _id;
         GLuint _width;
         GLuint _height;
-        std::vector<std::shared_ptr<OpenGLTexture2D>> _colorAttachments;
-        std::shared_ptr<OpenGLTexture2D> _depthAttachment = nullptr;
+
+        std::vector<OpenGLFramebufferAttachmentDetails> _colorAttachments;
+        OpenGLFramebufferAttachmentDetails _depthAttachment{};
     };
 }

@@ -30,7 +30,7 @@ namespace BGLRenderer
         int width;
         int height;
         int components;
-        float* imageData = stbi_loadf_from_memory(bytes, size, &width, &height, &components, 0);
+        float* imageData = stbi_loadf_from_memory(bytes, static_cast<int>(size), &width, &height, &components, 0);
         ASSERT(imageData != nullptr, "Failed to load image data");
 
         GLenum internalFormat;
@@ -52,8 +52,12 @@ namespace BGLRenderer
             internalFormat = gammaCorrection ? GL_SRGB_ALPHA : GL_RGBA;
             dataFormat = GL_RGBA;
         }
+        else
+        {
+            ASSERT(false, "Invalid number of components must be in range of 1-4");
+        }
 
-        std::shared_ptr<OpenGLTexture2D> texture = std::make_shared<OpenGLTexture2D>(width, height, internalFormat);
+        std::shared_ptr<OpenGLTexture2D> texture = std::make_shared<OpenGLTexture2D>(std::format("Texture2D_{}x{}x{}", width, height, components), width, height, internalFormat);
         texture->setPixels(dataFormat, (GLfloat*)imageData);
 
         stbi_image_free(imageData);

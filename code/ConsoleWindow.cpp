@@ -19,9 +19,9 @@ namespace BGLRenderer
         // TODO: remove listener
     }
 
-    void ConsoleWindow::onIMGUI()
+    void ConsoleWindow::onIMGUI(bool& showConsole)
     {
-        ImGui::Begin("Console");
+        ImGui::Begin("Console", &showConsole);
 
         if (ImGui::Button("Clear"))
         {

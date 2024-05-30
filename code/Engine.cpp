@@ -8,7 +8,7 @@
 
 namespace BGLRenderer
 {
-    Engine::Engine(int argc, char** argv)
+    Engine::Engine([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
     {
     }
 
@@ -20,21 +20,22 @@ namespace BGLRenderer
     {
         Log::listen([](const std::string& message)
         {
-            std::cout << message << std::endl;
+            std::cout << message << '\n';
         });
 
         _consoleWindow = std::make_shared<ConsoleWindow>();
 
         _input = std::make_shared<Input>();
-        _assetContentLoader = std::make_shared<AssetContentLoader>();
-        _assetManager = std::make_shared<AssetManager>(_assetContentLoader);
-
         _window = std::make_shared<SDLWindow>(1920, 1080);
+        _window->setVSync(true);
         _window->setOnSDLEventCallback([&](const SDL_Event* ev)
         {
             ImGui_ImplSDL2_ProcessEvent(ev);
             _input->processSDLEvent(ev);
         });
+
+        _assetContentLoader = std::make_shared<AssetContentLoader>();
+        _assetManager = std::make_shared<AssetManager>(_assetContentLoader);
 
         _renderer = std::make_shared<OpenGLRenderer>(_assetManager, 1920, 1080);
         _window->setOnWindowResizedCallback([&](int width, int height)
@@ -109,9 +110,11 @@ namespace BGLRenderer
         return 0;
     }
 
-    void Engine::profilerWindow()
+    void Engine::statsWindow()
     {
-        ImGui::Begin("App profiler");
+        ImGui::Begin("Stats");
+
+        ImGui::Text(_renderer->systemInfo().c_str());
 
         ImGui::Text("FPS: %d", _profilerData.fps);
         ImGui::Text("Frame: %.4fms", _profilerData.totalFrameTime);
@@ -168,12 +171,12 @@ namespace BGLRenderer
 
         if (_showProfilerWindow)
         {
-            profilerWindow();
+            statsWindow();
         }
 
         if (_showConsoleWindow)
         {
-            _consoleWindow->onIMGUI();
+            _consoleWindow->onIMGUI(_showConsoleWindow);
         }
     }
 }

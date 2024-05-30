@@ -5,13 +5,14 @@
 #include "GLMMath.h"
 
 #include "OpenGLBase.h"
+#include "Publisher.h"
 
 namespace BGLRenderer
 {
     class OpenGLProgram
     {
     public:
-        OpenGLProgram(const std::string& vertexShaderCode, const std::string& fragmentShaderCode);
+        OpenGLProgram(const std::string& name, const std::string& vertexShaderCode, const std::string& fragmentShaderCode);
         ~OpenGLProgram();
 
         bool tryToUpdateVertexShader(const std::string& shaderCode);
@@ -28,10 +29,20 @@ namespace BGLRenderer
 
         GLint getUniformLocation(const std::string& name);
 
+        inline const std::string& name() const { return _name; }
+        inline PublisherEmpty& programLinkedPublisher() { return _programLinkedPublisher; }
+
+        inline bool hasErrors() const { return _hasErrors; }
+
     private:
+        std::string _name;
         GLuint _program;
         GLuint _fragmentShader;
         GLuint _vertexShader;
+
+        PublisherEmpty _programLinkedPublisher{};
+
+        bool _hasErrors = true;
 
         bool link();
 

@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Base.h"
+#include "Log.h"
 
 #include <vector>
 #include <filesystem>
@@ -17,6 +18,8 @@ namespace BGLRenderer
         std::filesystem::file_time_type getLastWriteTime(const std::filesystem::path& path);
 
     private:
+        Log _logger{"AssetContentLoader"};
+        
         std::filesystem::path _assetsFolderPath = "./assets/";
 
         std::filesystem::path getAssetPath(const std::filesystem::path& path);

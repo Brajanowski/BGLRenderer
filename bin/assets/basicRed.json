@@ -1,0 +1,21 @@
+{
+    "program": {
+        "vertexShader": "shaders/gbuffer_default.vert",
+        "fragmentShader": "shaders/gbuffer_default.frag"
+    },
+    "tint": {
+        "value_type": 4,
+        "value": {
+            "x": 1.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+        }
+    },
+    "baseColor": {
+        "value_type": 0,
+        "value": {
+            "texture": "white"
+        }
+    }
+}

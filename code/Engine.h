@@ -39,7 +39,7 @@ namespace BGLRenderer
         double secondsSinceStart();
 
         inline const std::shared_ptr<Input>& input() const { return _input; }
-        inline const std::shared_ptr<AssetManager>& assetsLoader() const { return _assetManager; }
+        inline const std::shared_ptr<AssetManager>& assets() const { return _assetManager; }
         
     private:
         Log _logger{"Engine"};
@@ -58,7 +58,7 @@ namespace BGLRenderer
         bool _showProfilerWindow = true;
         bool _showConsoleWindow = true;
 
-        void profilerWindow();
+        void statsWindow();
 
         void initImgui();
         void shutdownImgui();

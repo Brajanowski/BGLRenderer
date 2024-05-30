@@ -5,10 +5,11 @@
 #include "ProgramLoader.h"
 #include "ModelLoader.h"
 #include "AssetFileChangesObserver.h"
+#include "ConcreteAssetManager.h"
+#include "MaterialLoader.h"
 
-#include "ObjectInMemoryCache.h"
+#include "AssetManagerTypes.h"
 
-#include "OpenGLBase.h"
 #include "OpenGLProgram.h"
 #include "OpenGLRenderObject.h"
 #include "OpenGLTexture2D.h"
@@ -24,15 +25,16 @@ namespace BGLRenderer
 
         void tick();
 
-        void registerTexture(const std::string& name, const std::shared_ptr<OpenGLTexture2D>& texture);
-        void registerProgram(const std::string& name, const std::shared_ptr<OpenGLProgram>& program);
-        void registerModel(const std::string& name, const std::shared_ptr<OpenGLRenderObject>& renderObject);
+        void registerAsset(const std::string& name, const std::shared_ptr<OpenGLTexture2D>& texture);
+        void registerAsset(const std::string& name, const std::shared_ptr<OpenGLProgram>& program);
+        void registerAsset(const std::string& name, const std::shared_ptr<OpenGLRenderObject>& renderObject);
+        void registerAsset(const std::string& name, const std::shared_ptr<OpenGLMaterial>& material);
 
         /// @brief Loads or returns existing program with given name.
         /// Names of vertex and fragment shaders are constructed from the name parameter by adding appropriate suffix.
         /// If the program is successfully loaded, it's registered using the registerProgram function with the specified name.
         std::shared_ptr<OpenGLProgram> getProgram(const std::string& name);
-        
+
         /// @brief Loads or returns existing program.
         /// The loaded program is registered using the registerProgram function
         /// Name is generated using provided vertex and fragment shaders names.
@@ -41,24 +43,25 @@ namespace BGLRenderer
         std::shared_ptr<OpenGLProgram> getProgram(const std::string& vertexShaderName, const std::string& fragmentShaderName);
 
         /// @brief Loads or return existing model with given name
-        std::shared_ptr<OpenGLTexture2D> getTexture(const std::string& name);
+        std::shared_ptr<OpenGLTexture2D> getTexture2D(const std::string& name);
 
         /// @brief Loads or return existing model with given name, uses given program to create materials when loading model
         std::shared_ptr<OpenGLRenderObject> getModel(const std::string& name, const std::shared_ptr<OpenGLProgram>& program);
 
+        std::shared_ptr<OpenGLMaterial> getMaterial(const std::string& name);
+
+        static Log& logger();
+
     private:
-        Log _logger{"AssetsLoader"};
         std::shared_ptr<AssetContentLoader> _contentLoader;
         AssetFileChangesObserver _assetFileChangesObserver;
 
-        std::shared_ptr<ObjectInMemoryCache<std::string, OpenGLProgram>> _programCache;
-        std::shared_ptr<ObjectInMemoryCache<std::string, OpenGLTexture2D>> _texture2DCache;
-        std::shared_ptr<ObjectInMemoryCache<std::string, OpenGLRenderObject>> _modelCache;
-        
-        std::shared_ptr<ProgramLoader> _programLoader;
-        std::shared_ptr<TextureLoader> _textureLoader;
-        std::shared_ptr<ModelLoader> _modelLoader;
+        std::shared_ptr<ProgramAssetManager> _programAssetManager;
+        std::shared_ptr<TextureAssetManager> _textureAssetManager;
+        std::shared_ptr<MaterialAssetManager> _materialAssetManager;
+        std::shared_ptr<ModelAssetManager> _modelAssetManager;
 
         void addProgramShadersListeners(const std::shared_ptr<OpenGLProgram>& program, const std::string& vertexShaderName, const std::string& fragmentShaderName);
+        void addMaterialListener(const std::shared_ptr<OpenGLMaterial>& material, const std::string& name);
     };
 }

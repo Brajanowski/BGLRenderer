@@ -18,8 +18,11 @@ include(sdl)
 # IMGUI
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/lib/ImGui)
 
-#glm
+# glm
 set(GLM_INCLUDE_DIRS ${CMAKE_CURRENT_LIST_DIR}/lib/glm)
+
+# rapid json
+set(RAPIDJSON_INCLUDE_DIRS ${CMAKE_CURRENT_LIST_DIR}/lib/rapidjson)
 
 add_executable(BGLrenderer
     code/Base.h
@@ -32,6 +35,7 @@ add_executable(BGLrenderer
     code/SDLWindow.cpp
     code/Log.h
     code/Log.cpp
+    code/Publisher.h
     code/ConsoleWindow.h
     code/ConsoleWindow.cpp
     code/Input.h
@@ -40,6 +44,7 @@ add_executable(BGLrenderer
     code/Transform.h
     code/PerspectiveCamera.h
     code/OpenGLBase.h
+    code/OpenGLBase.cpp
     code/OpenGLProgram.h
     code/OpenGLProgram.cpp
     code/OpenGLMaterial.h
@@ -55,16 +60,21 @@ add_executable(BGLrenderer
     code/OpenGLRenderer.cpp
     code/AssetContentLoader.h
     code/AssetContentLoader.cpp
+    code/ConcreteAssetManager.h
+    code/ConcreteAssetManager.cpp
     code/AssetManager.h
     code/AssetManager.cpp
     code/AssetFileChangesObserver.h
     code/AssetFileChangesObserver.cpp
+    code/AssetManagerTypes.h
     code/ProgramLoader.h
     code/ProgramLoader.cpp
     code/TextureLoader.h
     code/TextureLoader.cpp
     code/ModelLoader.h
     code/ModelLoader.cpp
+    code/MaterialLoader.h
+    code/MaterialLoader.cpp
     code/ObjectInMemoryCache.h
     code/ApplicationSandbox.h
     code/ApplicationSandbox.cpp
@@ -79,12 +89,11 @@ add_executable(BGLrenderer
 set_target_properties(BGLrenderer PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/bin")
 
 if (MSVC)
-    add_compile_options(/W4 /WX)
+    target_compile_options(BGLrenderer PRIVATE /W4 /WX)
 else()
-    add_compile_options(-Wall -Wextra -pedantic -Werror)
+    target_compile_options(BGLrenderer PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-target_compile_options(BGLrenderer PUBLIC)
 target_compile_features(BGLrenderer PRIVATE cxx_std_20)
 
 target_include_directories(BGLrenderer PUBLIC ./code/)
@@ -105,3 +114,5 @@ target_include_directories(BGLrenderer PRIVATE ${IMGUI_INCLUDE_DIRS})
 # glm
 target_include_directories(BGLrenderer PRIVATE ${GLM_INCLUDE_DIRS})
 
+# rapid json
+target_include_directories(BGLrenderer PRIVATE ${RAPIDJSON_INCLUDE_DIRS})

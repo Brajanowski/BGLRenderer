@@ -7,12 +7,12 @@ namespace BGLRenderer
     {
     }
 
-    std::shared_ptr<OpenGLProgram> ProgramLoader::loadProgram(const std::string& vertexShaderName, const std::string& fragmentShaderName)
+    std::shared_ptr<OpenGLProgram> ProgramLoader::load(const std::string& vertexShaderName, const std::string& fragmentShaderName)
     {
         std::vector<std::uint8_t> vertexContent = _contentLoader->load(vertexShaderName);
         std::vector<std::uint8_t> fragmentContent = _contentLoader->load(fragmentShaderName);
 
-        std::shared_ptr<OpenGLProgram> program = std::make_shared<OpenGLProgram>(std::string(vertexContent.begin(), vertexContent.end()), std::string(fragmentContent.begin(), fragmentContent.end()));
+        std::shared_ptr<OpenGLProgram> program = std::make_shared<OpenGLProgram>(std::format("{}+{}", vertexShaderName, fragmentShaderName), std::string(vertexContent.begin(), vertexContent.end()), std::string(fragmentContent.begin(), fragmentContent.end()));
         return program;
     }
 

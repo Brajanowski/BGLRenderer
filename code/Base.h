@@ -3,3 +3,4 @@
 #include <cassert>
 
 #define ASSERT(condition, msg) assert(condition && msg)
+

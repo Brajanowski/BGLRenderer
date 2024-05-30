@@ -18,7 +18,7 @@ namespace BGLRenderer
         }
     }
     
-    void AssetFileChangesObserver::listenFileChanged(const std::filesystem::path& path, const FileChangedFn& callback)
+    Publisher<AssetFileChangedEvent>::ListenerHandle AssetFileChangesObserver::listenFileChanged(const std::filesystem::path& path, const Publisher<AssetFileChangedEvent>::CallbackFn& callback)
     {
         ASSERT(callback != nullptr, "Trying to add null callback!");
         ASSERT(_contentLoader->fileExists(path), "File doesn't exists!");
@@ -26,15 +26,32 @@ namespace BGLRenderer
         if (_observedFilesMap.contains(path))
         {
             auto& fileListeners = _observedFilesMap[path];
-            fileListeners.listeners.push_back(callback);
-            return;
+            return fileListeners.publisher.listen(callback);
         }
 
         ObservedAssetFile observedAssetFile{};
         observedAssetFile.path = path;
         observedAssetFile.lastWriteTime = _contentLoader->getLastWriteTime(path);
-        observedAssetFile.listeners.push_back(callback);
+        Publisher<AssetFileChangedEvent>::ListenerHandle listenerHandle = observedAssetFile.publisher.listen(callback);
         _observedFilesMap[path] = observedAssetFile;
+
+        return listenerHandle;
+    }
+
+    void AssetFileChangesObserver::removeFileChangedListener(const std::filesystem::path& path, Publisher<AssetFileChangedEvent>::ListenerHandle handle)
+    {
+        if (!_observedFilesMap.contains(path))
+        {
+            return;
+        }
+
+        ObservedAssetFile& observedFile = _observedFilesMap[path];
+        observedFile.publisher.removeListener(handle);
+
+        if (observedFile.publisher.listenersCount() == 0)
+        {
+            _observedFilesMap.erase(path);
+        }
     }
 
     void AssetFileChangesObserver::checkFilesForChanges()
@@ -43,7 +60,7 @@ namespace BGLRenderer
         {
             if (updateWriteTimeIfChanged(val))
             {
-                notify(val);
+                val.publisher.publish({val.path, val.lastWriteTime});
             }
         }
     }
@@ -59,13 +76,5 @@ namespace BGLRenderer
 
         fileOverwriteListeners.lastWriteTime = currentWriteTime;
         return true;
-    }
-
-    void AssetFileChangesObserver::notify(const ObservedAssetFile& observedAssetFile)
-    {
-        for (const auto& listener : observedAssetFile.listeners)
-        {
-            listener(observedAssetFile.path, observedAssetFile.lastWriteTime);
-        }
     }
 }

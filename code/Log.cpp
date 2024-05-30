@@ -7,7 +7,7 @@ namespace BGLRenderer
     static std::vector<LogListenerFn> listeners;
     
     Log::Log(const std::string& category) :
-        _category("[" + category + "]")
+        _category(category)
     {
     }
 
@@ -18,11 +18,9 @@ namespace BGLRenderer
 
     void Log::write(const std::string& message)
     {
-        std::string messageToWrite = _category + message;
-
         for (const auto& listener : listeners)
         {
-            listener(messageToWrite);
+            listener(message);
         }
     }
 }

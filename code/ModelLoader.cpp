@@ -1,22 +1,25 @@
 ﻿#include "ModelLoader.h"
 
+#pragma warning(push)
+#pragma warning(disable : 4996)
 #define CGLTF_IMPLEMENTATION
 #include "cgltf.h"
+#pragma warning(pop)
 
 #include "Timer.h"
+
+#include "TextureLoader.h"
 
 namespace BGLRenderer
 {
     ModelLoader::ModelLoader(const std::shared_ptr<AssetContentLoader>& contentLoader,
-                             const std::shared_ptr<TextureLoader>& textureLoader,
-                             const std::shared_ptr<ObjectInMemoryCache<std::string, OpenGLTexture2D>>& texturesCache) :
+                             const std::shared_ptr<TextureAssetManager>& textureAssetManager) :
         _contentLoader(contentLoader),
-        _textureLoader(textureLoader),
-        _texturesCache(texturesCache)
+        _textureAssetManager(textureAssetManager)
     {
     }
 
-    std::shared_ptr<OpenGLRenderObject> ModelLoader::loadModel(const std::string& name, const std::shared_ptr<OpenGLProgram>& program)
+    std::shared_ptr<OpenGLRenderObject> ModelLoader::load(const std::string& name, const std::shared_ptr<OpenGLProgram>& program)
     {
         HighResolutionTimer loadingTimer;
 
@@ -54,10 +57,14 @@ namespace BGLRenderer
                 std::vector<GLuint> indices;
                 indices.reserve(primitive->indices->count);
 
-                std::shared_ptr<OpenGLMaterial> openGLMaterial = std::make_shared<OpenGLMaterial>(program);
+                std::shared_ptr<OpenGLMaterial> openGLMaterial = std::make_shared<OpenGLMaterial>(name, MaterialType::Opaque, program);
                 if (primitive->material != nullptr)
                 {
                     loadMaterialFromCGLTFMaterial(name, openGLMaterial, basePath, primitive->material);
+                    if (primitive->material->name != nullptr)
+                    {
+                        openGLMaterial->name() = std::format("M_{}", primitive->material->name);
+                    }
                 }
 
                 for (cgltf_size attributeIndex = 0; attributeIndex < primitive->attributes_count; ++attributeIndex)
@@ -90,27 +97,27 @@ namespace BGLRenderer
                 }
 
                 std::shared_ptr<OpenGLMesh> openGLMesh = std::make_shared<OpenGLMesh>();
-                openGLMesh->setVertices(positions.data(), positions.size());
+                openGLMesh->setVertices(positions.data(), static_cast<GLuint>(positions.size()));
 
                 if (normals.empty())
                 {
                     OpenGLMesh::calculateNormals(normals, positions, indices);
                 }
-                openGLMesh->setNormals(normals.data(), normals.size());
+                openGLMesh->setNormals(normals.data(), static_cast<GLuint>(normals.size()));
 
                 if (uvs0.empty())
                 {
                     uvs0.resize(positions.size() / 3 * 2, 0.0f);
                 }
-                openGLMesh->setUVs0(uvs0.data(), uvs0.size());
+                openGLMesh->setUVs0(uvs0.data(), static_cast<GLuint>(uvs0.size()));
 
                 if (tangents.empty())
                 {
                     OpenGLMesh::calculateTangents(tangents, positions, uvs0, indices);
                 }
-                openGLMesh->setTangents(tangents.data(), tangents.size());
+                openGLMesh->setTangents(tangents.data(), static_cast<GLuint>(tangents.size()));
 
-                openGLMesh->setIndices(indices.data(), indices.size());
+                openGLMesh->setIndices(indices.data(), static_cast<GLuint>(indices.size()));
 
                 RenderObjectSubmesh submesh;
                 submesh.material = openGLMaterial;
@@ -127,6 +134,8 @@ namespace BGLRenderer
 
     void ModelLoader::loadMaterialFromCGLTFMaterial(const std::string& modelName, const std::shared_ptr<OpenGLMaterial>& target, const std::string& basePath, const cgltf_material* material)
     {
+        target->setVector4("tint", {1, 1, 1, 1});
+
         if (material->pbr_metallic_roughness.base_color_texture.texture != nullptr)
         {
             loadCGLTFMaterialTextureToSlot(modelName, target, "baseColor", basePath, material->pbr_metallic_roughness.base_color_texture.texture);
@@ -152,29 +161,21 @@ namespace BGLRenderer
             std::string uri = texture->image->uri;
             std::string texturePath = basePath + uri;
 
-            if (_texturesCache->exists(texturePath))
-            {
-                openGLTexture = _texturesCache->get(texturePath);
-            }
-            else
-            {
-                openGLTexture = _textureLoader->loadTexture2D(texturePath);
-                _texturesCache->set(texturePath, openGLTexture);
-            }
+            openGLTexture = _textureAssetManager->get(texturePath);
         }
         else
         {
             std::string textureName = modelName + "+" + texture->image->name;
 
-            if (_texturesCache->exists(textureName))
+            if (_textureAssetManager->exists(textureName))
             {
-                openGLTexture = _texturesCache->get(textureName);
+                openGLTexture = _textureAssetManager->get(textureName);
             }
             else
             {
                 const uint8_t* imageData = cgltf_buffer_view_data(texture->image->buffer_view);
-                openGLTexture = _textureLoader->loadTextureFromImageData(imageData, texture->image->buffer_view->buffer->size);
-                _texturesCache->set(textureName, openGLTexture);
+                openGLTexture = _textureAssetManager->loader()->loadTextureFromImageData(imageData, texture->image->buffer_view->buffer->size);
+                _textureAssetManager->registerAsset(textureName, openGLTexture);
             }
         }
 

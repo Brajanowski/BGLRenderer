@@ -2,7 +2,8 @@
 
 namespace BGLRenderer
 {
-    OpenGLTexture2D::OpenGLTexture2D(GLuint width, GLuint height, GLenum format, GLenum wrapMode, GLenum filterMode) :
+    OpenGLTexture2D::OpenGLTexture2D(const std::string& name, GLuint width, GLuint height, GLenum format, GLenum wrapMode, GLenum filterMode) :
+        _name(name),
         _width(width),
         _height(height),
         _format(format),
@@ -36,6 +37,12 @@ namespace BGLRenderer
     {
         GL_CALL(glBindTexture(GL_TEXTURE_2D, _id));
         GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, _format, _width, _height, 0, format, GL_BYTE, pixels));
+    }
+
+    void OpenGLTexture2D::setPixels(GLuint format, GLubyte* pixels)
+    {
+        GL_CALL(glBindTexture(GL_TEXTURE_2D, _id));
+        GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, _format, _width, _height, 0, format, GL_UNSIGNED_BYTE, pixels));
     }
 
     void OpenGLTexture2D::setPixels(GLuint format, GLfloat* pixels)

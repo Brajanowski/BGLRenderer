@@ -8,11 +8,26 @@ namespace BGLRenderer
     constexpr int GBufferNormalsAttachment = 1;
 
     OpenGLRenderer::OpenGLRenderer(const std::shared_ptr<AssetManager>& assetsLoader, int frameWidth, int frameHeight) :
-        _assetsLoader(assetsLoader),
+        _assetManager(assetsLoader),
         _frameWidth(frameWidth),
         _frameHeight(frameHeight)
     {
         initializeDefaultResources();
+
+        _systemInfo += "Vendor: ";
+        _systemInfo += reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+        _systemInfo += '\n';
+        
+        _systemInfo += "Renderer: ";
+        _systemInfo += reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+        _systemInfo += '\n';
+
+        _systemInfo += "Version: ";
+        _systemInfo += reinterpret_cast<const char*>(glGetString(GL_VERSION));
+        _systemInfo += '\n';
+        
+        _systemInfo += "Shading Language Version: ";
+        _systemInfo += reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
     }
 
     OpenGLRenderer::~OpenGLRenderer()
@@ -65,6 +80,7 @@ namespace BGLRenderer
         _frameWidth = width;
         _frameHeight = height;
 
+        _frameFramebuffer->resize(width, height);
         _gbuffer->resize(width, height);
         _lightBuffer->resize(width, height);
     }
@@ -77,15 +93,29 @@ namespace BGLRenderer
     void OpenGLRenderer::endFrame()
     {
         _viewProjection = _camera->viewProjection();
-        
+
         gbufferPass();
         lightPass();
-        finalFramePass();
+        combineLighting();
+        unlitPass();
+        presentFinalFrame();
     }
 
     void OpenGLRenderer::initializeDefaultResources()
     {
         _logger.debug("Initializing default resources");
+
+        constexpr int whiteTextureSize = 2;
+
+        GLubyte whiteColors[whiteTextureSize * whiteTextureSize];
+        std::memset(whiteColors, 0xFF, sizeof(GLubyte) * whiteTextureSize * whiteTextureSize);
+
+        _whiteTexture = std::make_shared<OpenGLTexture2D>("white", whiteTextureSize, whiteTextureSize, GL_RGBA);
+        _whiteTexture->setPixels(GL_RGBA, whiteColors);
+        _assetManager->registerAsset("white", _whiteTexture);
+
+        _fallbackMaterial = std::make_shared<OpenGLMaterial>("fallback", MaterialType::Unlit, _assetManager->getProgram("shaders/fallback"));
+        _assetManager->registerAsset("fallback", _fallbackMaterial);
 
         _quadMesh = std::make_shared<OpenGLMesh>();
 
@@ -120,24 +150,31 @@ namespace BGLRenderer
         _quadMesh->setUVs0(uvs, sizeof(uvs) / sizeof(GLfloat));
         _quadMesh->setIndices(indices, sizeof(indices) / sizeof(GLuint));
 
-        _baseColorProgram = _assetsLoader->getProgram("shaders/base_color");
+        _baseColorProgram = _assetManager->getProgram("shaders/base_color");
+        _baseTextureProgram = _assetManager->getProgram("shaders/basic");
 
-        // GBuffer
-        _gbuffer = std::make_shared<OpenGLFramebuffer>(_frameWidth, _frameHeight);
-        // DO NOT CHANGE THE ORDER
-        _gbuffer->createColorAttachment(GL_RGBA); // Albedo
-        _gbuffer->createColorAttachment(GL_RGBA); // Normal map
+        // GBuffer - do not change the order of attachments
+        _gbuffer = std::make_shared<OpenGLFramebuffer>("GBuffer", _frameWidth, _frameHeight);
+        _gbuffer->createColorAttachment("Albedo", GL_RGBA);
+        _gbuffer->createColorAttachment("Normal", GL_RGBA);
         _gbuffer->createDepthAttachment(GL_DEPTH_COMPONENT);
         _gbuffer->validate();
 
-        _lightBuffer = std::make_shared<OpenGLFramebuffer>(_frameWidth, _frameHeight);
-        _lightBuffer->createColorAttachment(GL_RGB);
+        _lightBuffer = std::make_shared<OpenGLFramebuffer>("Light Buffer", _frameWidth, _frameHeight);
+        _lightBuffer->createColorAttachment("Light", GL_RGB);
         _lightBuffer->validate();
 
-        _directionalLightProgram = _assetsLoader->getProgram("shaders/light_directional");
-        _combineFinalFrameProgram = _assetsLoader->getProgram("shaders/combine_finalframe");
+        _frameTexture = std::make_shared<OpenGLTexture2D>("Frame Texture", _frameWidth, _frameHeight, GL_RGBA);
+        _frameTexture->generatePixelsBuffer();
 
-        _displayBufferMaterial = std::make_shared<OpenGLMaterial>(_assetsLoader->getProgram("shaders/basic"));
+        _frameFramebuffer = std::make_shared<OpenGLFramebuffer>("Frame Framebuffer", _frameWidth, _frameHeight);
+        _frameFramebuffer->addColorAttachment(_frameTexture, true);
+        //_frameFramebuffer->createColorAttachment("Frame", GL_RGBA);
+        _frameFramebuffer->setDepthAttachment(_gbuffer->depthAttachment().texture);
+        _frameFramebuffer->validate();
+
+        _directionalLightProgram = _assetManager->getProgram("shaders/light_directional");
+        _combineFinalFrameProgram = _assetManager->getProgram("shaders/combine_finalframe");
     }
 
     void OpenGLRenderer::gbufferPass()
@@ -152,14 +189,14 @@ namespace BGLRenderer
 
         glViewport(0, 0, _frameWidth, _frameHeight);
 
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        GL_CALL(glDepthMask(GL_TRUE));
         GL_CALL(glEnable(GL_DEPTH_TEST));
         GL_CALL(glDepthFunc(GL_LEQUAL));
-
         GL_CALL(glEnable(GL_CULL_FACE));
         GL_CALL(glCullFace(GL_BACK));
+
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         for (const auto& renderObject : _renderObjects)
         {
@@ -167,12 +204,22 @@ namespace BGLRenderer
 
             for (const auto& submesh : renderObject->submeshes())
             {
-                submesh.material->bind();
-                
-                // TODO: cache uniform locations
-                submesh.material->program()->setMatrix4x4(submesh.material->program()->getUniformLocation("u_model"), model);
-                submesh.material->program()->setMatrix4x4(submesh.material->program()->getUniformLocation("u_viewProjection"), _viewProjection);
+                std::shared_ptr<OpenGLMaterial> material = submesh.material;
+                if (material == nullptr || !material->valid())
+                {
+                    material = _fallbackMaterial;
+                }
 
+                if (material->type() != MaterialType::Opaque)
+                {
+                    continue;
+                }
+
+                material->bind();
+                material->program()->setVector2(material->program()->getUniformLocation("u_resolution"), glm::vec2{static_cast<float>(_frameWidth), static_cast<float>(_frameHeight)});
+                material->program()->setMatrix4x4(material->program()->getUniformLocation("u_model"), model);
+                material->program()->setMatrix4x4(material->program()->getUniformLocation("u_viewProjection"), _viewProjection);
+                
                 submesh.mesh->bind();
                 submesh.mesh->draw();
             }
@@ -183,11 +230,12 @@ namespace BGLRenderer
 
     void OpenGLRenderer::lightPass()
     {
-        GL_CALL(glDisable(GL_DEPTH_TEST));
-
         _lightBuffer->bind();
         _quadMesh->bind();
 
+        GL_CALL(glDepthMask(GL_FALSE));
+
+        GL_CALL(glDisable(GL_DEPTH_TEST));
         GL_CALL(glDisable(GL_BLEND));
 
         // ambient light
@@ -200,8 +248,8 @@ namespace BGLRenderer
         GL_CALL(glEnable(GL_BLEND));
         GL_CALL(glBlendFunc(GL_ONE, GL_ONE));
 
-        _gbuffer->colorAttachments()[GBufferNormalsAttachment]->bind(0);
-        _gbuffer->depthAttachment()->bind(1);
+        _gbuffer->colorAttachments()[GBufferNormalsAttachment].texture->bind(0);
+        _gbuffer->depthAttachment().texture->bind(1);
 
         glm::mat4 inverseViewProjection = glm::inverse(_viewProjection);
 
@@ -219,64 +267,130 @@ namespace BGLRenderer
         GL_CALL(glDisable(GL_BLEND));
         _lightBuffer->unbind();
 
-        _gbuffer->colorAttachments()[GBufferNormalsAttachment]->unbind();
-        _gbuffer->depthAttachment()->unbind();
+        _gbuffer->colorAttachments()[GBufferNormalsAttachment].texture->unbind();
+        _gbuffer->depthAttachment().texture->unbind();
     }
 
-    void OpenGLRenderer::finalFramePass()
+    void OpenGLRenderer::unlitPass()
+    {
+        _frameFramebuffer->bind();
+
+        GL_CALL(glDisable(GL_BLEND));
+
+        GL_CALL(glDepthMask(GL_TRUE));
+        GL_CALL(glEnable(GL_DEPTH_TEST));
+        GL_CALL(glDepthFunc(GL_LEQUAL));
+
+        GL_CALL(glEnable(GL_CULL_FACE));
+        GL_CALL(glCullFace(GL_BACK));
+
+        for (const auto& renderObject : _renderObjects)
+        {
+            glm::mat4 model = renderObject->modelMatrix();
+
+            for (const auto& submesh : renderObject->submeshes())
+            {
+                std::shared_ptr<OpenGLMaterial> material = submesh.material;
+                if (material == nullptr || !material->valid())
+                {
+                    material = _fallbackMaterial;
+                }
+
+                if (material->type() != MaterialType::Unlit)
+                {
+                    continue;
+                }
+
+                material->bind();
+                material->program()->setVector2(material->program()->getUniformLocation("u_resolution"), glm::vec2{static_cast<float>(_frameWidth), static_cast<float>(_frameHeight)});
+                material->program()->setMatrix4x4(material->program()->getUniformLocation("u_model"), model);
+                material->program()->setMatrix4x4(material->program()->getUniformLocation("u_viewProjection"), _viewProjection);
+
+                submesh.mesh->bind();
+                submesh.mesh->draw();
+            }
+        }
+
+        _frameFramebuffer->unbind();
+    }
+
+    void OpenGLRenderer::combineLighting()
     {
         GL_CALL(glDisable(GL_DEPTH_TEST));
 
+        _frameFramebuffer->bind();
+
+        GLenum drawTargets[] = {
+            GL_COLOR_ATTACHMENT0
+        };
+        GL_CALL(glDrawBuffers(1, drawTargets));
+
+        _gbuffer->colorAttachments()[GBufferAlbedoAttachment].texture->bind(0);
+        _lightBuffer->colorAttachments()[0].texture->bind(1);
+
+        _combineFinalFrameProgram->bind();
+        _combineFinalFrameProgram->setInt(_combineFinalFrameProgram->getUniformLocation("u_albedo"), 0);
+        _combineFinalFrameProgram->setInt(_combineFinalFrameProgram->getUniformLocation("u_light"), 1);
+
+        _quadMesh->bind();
+        _quadMesh->draw();
+
+        _gbuffer->colorAttachments()[GBufferAlbedoAttachment].texture->unbind();
+        _lightBuffer->colorAttachments()[0].texture->unbind();
+
+        _frameFramebuffer->unbind();
+    }
+
+    void OpenGLRenderer::presentFinalFrame()
+    {
+        GL_CALL(glDisable(GL_DEPTH_TEST));
+        GL_CALL(glDisable(GL_CULL_FACE));
+
+        glViewport(0, 0, _frameWidth, _frameHeight);
+        GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+
+        std::shared_ptr<OpenGLTexture2D> bufferTexture = nullptr;
+
         if (_bufferToDisplay == BufferToDisplay::finalFrame)
         {
-            _gbuffer->colorAttachments()[GBufferAlbedoAttachment]->bind(0);
-            _lightBuffer->colorAttachments()[0]->bind(1);
-
-            _combineFinalFrameProgram->bind();
-            _combineFinalFrameProgram->setInt(_combineFinalFrameProgram->getUniformLocation("u_albedo"), 0);
-            _combineFinalFrameProgram->setInt(_combineFinalFrameProgram->getUniformLocation("u_light"), 1);
-
-            _quadMesh->bind();
-            _quadMesh->draw();
-
-            _gbuffer->colorAttachments()[GBufferAlbedoAttachment]->unbind();
-            _lightBuffer->colorAttachments()[0]->unbind();
+            bufferTexture = _frameTexture;
         }
-        else
+        else if (_bufferToDisplay == BufferToDisplay::lightBuffer)
         {
-            std::shared_ptr<OpenGLTexture2D> bufferTexture = nullptr;
-
-            if (_bufferToDisplay == BufferToDisplay::lightBuffer)
-            {
-                bufferTexture = _lightBuffer->colorAttachments()[0];
-            }
-            else if (_bufferToDisplay == BufferToDisplay::albedo)
-            {
-                bufferTexture = _gbuffer->colorAttachments()[GBufferAlbedoAttachment];
-            }
-            else if (_bufferToDisplay == BufferToDisplay::normal)
-            {
-                bufferTexture = _gbuffer->colorAttachments()[GBufferNormalsAttachment];
-            }
-            else if (_bufferToDisplay == BufferToDisplay::depth)
-            {
-                bufferTexture = _gbuffer->depthAttachment();
-            }
-
-            ASSERT(bufferTexture != nullptr, "Invalid buffer to display");
-
-            _displayBufferMaterial->setTexture2D("baseColor", bufferTexture);
-            _displayBufferMaterial->bind();
-            _quadMesh->bind();
-            _quadMesh->draw();
-
-            bufferTexture->unbind();
+            bufferTexture = _lightBuffer->colorAttachments()[0].texture;
         }
+        else if (_bufferToDisplay == BufferToDisplay::albedo)
+        {
+            bufferTexture = _gbuffer->colorAttachments()[GBufferAlbedoAttachment].texture;
+        }
+        else if (_bufferToDisplay == BufferToDisplay::normal)
+        {
+            bufferTexture = _gbuffer->colorAttachments()[GBufferNormalsAttachment].texture;
+        }
+        else if (_bufferToDisplay == BufferToDisplay::depth)
+        {
+            bufferTexture = _gbuffer->depthAttachment().texture;
+        }
+
+        ASSERT(bufferTexture != nullptr, "Invalid buffer to display");
+
+        bufferTexture->bind(0);
+
+        _baseTextureProgram->bind();
+        _baseTextureProgram->setVector4(_baseTextureProgram->getUniformLocation("u_tint"), {1, 1, 1, 1});
+        _baseTextureProgram->setInt(_baseTextureProgram->getUniformLocation("u_baseColor"), 0);
+        _baseTextureProgram->setMatrix4x4(_baseTextureProgram->getUniformLocation("u_model"), glm::mat4(1.0f));
+        _baseTextureProgram->setMatrix4x4(_baseTextureProgram->getUniformLocation("u_viewProjection"), glm::mat4(1.0f));
+
+        _quadMesh->bind();
+        _quadMesh->draw();
+
+        bufferTexture->unbind();
     }
 
     void OpenGLRenderer::setCameraUniforms(const std::shared_ptr<OpenGLProgram>& program, const std::shared_ptr<PerspectiveCamera>& camera)
     {
-        program->setVector3(program->getUniformLocation("u_cameraPosition"), _camera->transform.position);
-        program->setVector3(program->getUniformLocation("u_cameraDirection"), _camera->forward());
+        program->setVector3(program->getUniformLocation("u_cameraPosition"), camera->transform.position);
+        program->setVector3(program->getUniformLocation("u_cameraDirection"), camera->forward());
     }
 }

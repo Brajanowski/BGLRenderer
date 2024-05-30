@@ -4,11 +4,16 @@
 #include <filesystem>
 
 #include "AssetContentLoader.h"
+#include "Publisher.h"
 #include "Timer.h"
 
 namespace BGLRenderer
 {
-    typedef std::function<void(const std::filesystem::path &, const std::filesystem::file_time_type &)> FileChangedFn;
+    struct AssetFileChangedEvent
+    {
+        std::filesystem::path path;
+        std::filesystem::file_time_type writeTime;
+    };
 
     class AssetFileChangesObserver
     {
@@ -18,7 +23,8 @@ namespace BGLRenderer
 
         void tick();
 
-        void listenFileChanged(const std::filesystem::path& path, const FileChangedFn& callback);
+        Publisher<AssetFileChangedEvent>::ListenerHandle listenFileChanged(const std::filesystem::path& path, const Publisher<AssetFileChangedEvent>::CallbackFn& callback);
+        void removeFileChangedListener(const std::filesystem::path& path, Publisher<AssetFileChangedEvent>::ListenerHandle handle);
 
     private:
         std::shared_ptr<AssetContentLoader> _contentLoader;
@@ -30,7 +36,7 @@ namespace BGLRenderer
         {
             std::filesystem::path path;
             std::filesystem::file_time_type lastWriteTime;
-            std::vector<FileChangedFn> listeners;
+            Publisher<AssetFileChangedEvent> publisher;
         };
         
         std::unordered_map<std::filesystem::path, ObservedAssetFile> _observedFilesMap;
@@ -39,7 +45,5 @@ namespace BGLRenderer
 
         /// @brief Returns true if saved last write time is less than the current
         bool updateWriteTimeIfChanged(ObservedAssetFile& fileOverwriteListeners);
-
-        void notify(const ObservedAssetFile& observedAssetFile);
     };
 }

@@ -11,7 +11,7 @@ namespace BGLRenderer
         ProgramLoader(const std::shared_ptr<AssetContentLoader>& contentLoader);
         ~ProgramLoader() = default;
 
-        std::shared_ptr<OpenGLProgram> loadProgram(const std::string& vertexShaderName, const std::string& fragmentShaderName);
+        std::shared_ptr<OpenGLProgram> load(const std::string& vertexShaderName, const std::string& fragmentShaderName);
 
         bool tryToUpdateVertexShader(const std::shared_ptr<OpenGLProgram>& program, const std::string& shaderName);
         bool tryToUpdateFragmentShader(const std::shared_ptr<OpenGLProgram>& program, const std::string& shaderName);

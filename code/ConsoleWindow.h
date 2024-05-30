@@ -11,7 +11,7 @@ namespace BGLRenderer
         ConsoleWindow();
         ~ConsoleWindow();
         
-        void onIMGUI();
+        void onIMGUI(bool& showConsole);
 
         void write(const std::string& message);
 

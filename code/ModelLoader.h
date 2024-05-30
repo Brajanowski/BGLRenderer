@@ -2,11 +2,9 @@
 
 #include "OpenGLRenderObject.h"
 #include "AssetContentLoader.h"
+#include "ConcreteAssetManager.h"
 
 #include "cgltf.h"
-#include "TextureLoader.h"
-#include "ObjectInMemoryCache.h"
-
 #include "Log.h"
 
 namespace BGLRenderer
@@ -15,18 +13,16 @@ namespace BGLRenderer
     {
     public:
         ModelLoader(const std::shared_ptr<AssetContentLoader>& contentLoader,
-                    const std::shared_ptr<TextureLoader>& textureLoader,
-                    const std::shared_ptr<ObjectInMemoryCache<std::string, OpenGLTexture2D>>& texturesCache);
+                    const std::shared_ptr<TextureAssetManager>& textureAssetManager);
         ~ModelLoader() = default;
 
-        std::shared_ptr<OpenGLRenderObject> loadModel(const std::string& name, const std::shared_ptr<OpenGLProgram>& program);
+        std::shared_ptr<OpenGLRenderObject> load(const std::string& name, const std::shared_ptr<OpenGLProgram>& program);
 
     private:
         Log _logger{"Model Loader"};
 
         std::shared_ptr<AssetContentLoader> _contentLoader;
-        std::shared_ptr<TextureLoader> _textureLoader;
-        std::shared_ptr<ObjectInMemoryCache<std::string, OpenGLTexture2D>> _texturesCache;
+        std::shared_ptr<TextureAssetManager> _textureAssetManager;
 
         void loadMaterialFromCGLTFMaterial(const std::string& modelName, const std::shared_ptr<OpenGLMaterial>& target, const std::string& basePath, const cgltf_material* material);
         void loadCGLTFMaterialTextureToSlot(const std::string& modelName, const std::shared_ptr<OpenGLMaterial>& target, const std::string& slotName, const std::string& basePath, const cgltf_texture* texture);

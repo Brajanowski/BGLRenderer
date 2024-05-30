@@ -7,6 +7,11 @@
 
 namespace BGLRenderer
 {
+    namespace Debug
+    {
+        constexpr bool LoadSponza = true;
+    }
+    
     ApplicationSandbox::ApplicationSandbox()
     {
     }
@@ -14,15 +19,21 @@ namespace BGLRenderer
     void ApplicationSandbox::onInit()
     {
         _camera = std::make_shared<PerspectiveCamera>();
-        _camera->transform.position = {0.0f, 20.0f, 5.0f};
+        _camera->transform.position = {0.0f, 4.963f, 5.0f};
 
-        _monkey = _engine->assetsLoader()->getModel("monkey.gltf", _engine->assetsLoader()->getProgram("shaders/gbuffer_default"));
-        _sponza = _engine->assetsLoader()->getModel("sponza/sponza.gltf", _engine->assetsLoader()->getProgram("shaders/gbuffer_default"));
+        auto monkeyMaterial = _engine->assets()->getMaterial("basicRed.json");
+        _monkey = _engine->assets()->getModel("monkey.gltf", _engine->assets()->getProgram("shaders/gbuffer_default"));
+        _monkey->submeshes()[0].material = monkeyMaterial;
 
-        const float sponzaScaleFactor = 0.1f;
-        glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0), glm::vec3(sponzaScaleFactor, sponzaScaleFactor, sponzaScaleFactor));
+        if constexpr (Debug::LoadSponza)
+        {
+            _sponza = _engine->assets()->getModel("sponza/sponza.gltf", _engine->assets()->getProgram("shaders/gbuffer_default"));
 
-        _sponza->setModelMatrix(scaleMatrix);
+            const float sponzaScaleFactor = 0.1f;
+            glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0), glm::vec3(sponzaScaleFactor, sponzaScaleFactor, sponzaScaleFactor));
+
+            _sponza->setModelMatrix(scaleMatrix);
+        }
     }
 
     void ApplicationSandbox::onShutdown()
@@ -87,7 +98,11 @@ namespace BGLRenderer
         renderer->setCamera(_camera);
 
         renderer->submit(_monkey);
-        renderer->submit(_sponza);
+
+        if constexpr (Debug::LoadSponza)
+        {
+            renderer->submit(_sponza);
+        }
     }
 
     void ApplicationSandbox::onIMGUI()
@@ -119,6 +134,6 @@ namespace BGLRenderer
 
     void ApplicationSandbox::onWindowResize(int width, int height)
     {
-        _camera->aspectRatio = (float)width / (float)height;
+        _camera->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
     }
 }

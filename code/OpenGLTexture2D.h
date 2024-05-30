@@ -7,12 +7,13 @@ namespace BGLRenderer
     class OpenGLTexture2D
     {
     public:
-        OpenGLTexture2D(GLuint width, GLuint height, GLenum format, GLenum wrapMode = GL_CLAMP_TO_EDGE, GLenum filterMode = GL_LINEAR);
+        OpenGLTexture2D(const std::string& name, GLuint width, GLuint height, GLenum format, GLenum wrapMode = GL_CLAMP_TO_EDGE, GLenum filterMode = GL_LINEAR);
         ~OpenGLTexture2D();
 
         void resize(GLuint width, GLuint height);
 
         void setPixels(GLuint format, GLbyte *pixels);
+        void setPixels(GLuint format, GLubyte *pixels);
         void setPixels(GLuint format, GLfloat *pixels);
 
         void generatePixelsBuffer();
@@ -25,7 +26,10 @@ namespace BGLRenderer
 
         inline GLuint id() { return _id; }
 
+        inline const std::string& name() const { return _name; }
+
     private:
+        std::string _name;
         GLuint _id;
         GLuint _width;
         GLuint _height;

@@ -26,6 +26,8 @@ namespace BGLRenderer
         GL_CALL(glDeleteBuffers(1, &_tangentsBufferObject));
         GL_CALL(glDeleteBuffers(1, &_uv0BufferObject));
         GL_CALL(glDeleteBuffers(1, &_indicesBufferObject));
+
+        _vertexArrayObject = 0;
     }
 
     void OpenGLMesh::bind()
@@ -95,15 +97,15 @@ namespace BGLRenderer
     {
         ASSERT(indices.size() % 3 == 0, "Invalid indices buffer size! Must be dividable by 3");
 
-        int vertexCount = positions.size() / 3;
-        int trianglesCount = indices.size() / 3;
+        GLuint vertexCount = static_cast<GLuint>(positions.size() / 3);
+        GLuint trianglesCount = static_cast<GLuint>(indices.size() / 3);
         target.resize(positions.size(), 0.0f);
 
-        for (int i = 0; i < trianglesCount; ++i)
+        for (GLuint i = 0; i < trianglesCount; ++i)
         {
-            int i0 = indices[i * 3];
-            int i1 = indices[i * 3 + 1];
-            int i2 = indices[i * 3 + 2];
+            GLuint i0 = indices[i * 3];
+            GLuint i1 = indices[i * 3 + 1];
+            GLuint i2 = indices[i * 3 + 2];
 
             glm::vec3 a = {positions[i0 * 3], positions[i0 * 3 + 1], positions[i0 * 3 + 2]};
             glm::vec3 b = {positions[i1 * 3], positions[i1 * 3 + 1], positions[i1 * 3 + 2]};
@@ -126,7 +128,7 @@ namespace BGLRenderer
             target[i2 * 3 + 2] += normal.z;
         }
 
-        for (int i = 0; i < vertexCount; ++i)
+        for (GLuint i = 0; i < vertexCount; ++i)
         {
             glm::vec3 normal = glm::normalize(glm::vec3(target[i * 3], target[i * 3 + 1], target[i * 3 + 2]));
 
@@ -148,18 +150,18 @@ namespace BGLRenderer
             return;
         }
 
-        int vertexCount = positions.size() / 3;
-        int trianglesCount = indices.size() / 3;
+        std::size_t vertexCount = positions.size() / 3;
+        std::size_t trianglesCount = indices.size() / 3;
         target.resize(positions.size() / 3 * 4, 0.0f);
 
         std::vector<glm::vec3> tangentsSum(vertexCount, glm::vec3(0, 0, 0));
         std::vector<glm::vec3> biTangentsSum(vertexCount, glm::vec3(0, 0, 0));
 
-        for (int i = 0; i < trianglesCount; ++i)
+        for (std::size_t i = 0; i < trianglesCount; ++i)
         {
-            int i0 = indices[i * 3];
-            int i1 = indices[i * 3 + 1];
-            int i2 = indices[i * 3 + 2];
+            GLuint i0 = indices[i * 3];
+            GLuint i1 = indices[i * 3 + 1];
+            GLuint i2 = indices[i * 3 + 2];
 
             glm::vec3 a = {positions[i0 * 3], positions[i0 * 3 + 1], positions[i0 * 3 + 2]};
             glm::vec3 b = {positions[i1 * 3], positions[i1 * 3 + 1], positions[i1 * 3 + 2]};
@@ -187,7 +189,7 @@ namespace BGLRenderer
             tangentsSum[i2] += tangent;
         }
 
-        for (int i = 0; i < vertexCount; ++i)
+        for (std::size_t i = 0; i < vertexCount; ++i)
         {
             glm::vec3 tangent = glm::normalize(tangentsSum[i]);
 

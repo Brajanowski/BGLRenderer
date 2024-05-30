@@ -14,6 +14,7 @@ namespace BGLRenderer
 {
     enum class OpenGLMaterialValueType
     {
+        int32,
         float32,
         vector2,
         vector3,
@@ -31,7 +32,8 @@ namespace BGLRenderer
 
         union
         {
-            float floatValue;
+            std::int32_t intValue;
+            std::float_t floatValue;
             glm::vec2 vec2;
             glm::vec3 vec3;
             glm::vec4 vec4;
@@ -43,9 +45,9 @@ namespace BGLRenderer
 
     enum class MaterialType
     {
-        Opaque = 0,
-        Transparent = 1,
-        Unlit = 2
+        opaque = 0,
+        transparent = 1,
+        unlit = 2
     };
 
     class OpenGLMaterial
@@ -57,7 +59,8 @@ namespace BGLRenderer
 
         void bind();
 
-        void setFloat(const std::string& name, float value);
+        void setInt(const std::string& name, std::int32_t value);
+        void setFloat(const std::string& name, std::float_t value);
         void setVector2(const std::string& name, const glm::vec2& value);
         void setVector3(const std::string& name, const glm::vec3& value);
         void setVector4(const std::string& name, const glm::vec4& value);

@@ -20,8 +20,8 @@ namespace BGLRenderer
 
         void bind();
 
-        void setInt(GLint location, int value);
-        void setFloat(GLint location, float value);
+        void setInt(GLint location, GLint value);
+        void setFloat(GLint location, GLfloat value);
         void setVector2(GLint location, const glm::vec2& value);
         void setVector3(GLint location, const glm::vec3& value);
         void setVector4(GLint location, const glm::vec4& value);

@@ -47,8 +47,11 @@ namespace BGLRenderer
         {
             switch (value.type)
             {
+            case OpenGLMaterialValueType::int32:
+                _program->setInt(value.uniformLocation, static_cast<GLint>(value.intValue));
+                break;
             case OpenGLMaterialValueType::float32:
-                _program->setFloat(value.uniformLocation, value.floatValue);
+                _program->setFloat(value.uniformLocation, static_cast<GLfloat>(value.floatValue));
                 break;
             case OpenGLMaterialValueType::vector2:
                 _program->setVector2(value.uniformLocation, value.vec2);
@@ -75,7 +78,19 @@ namespace BGLRenderer
         }
     }
 
-    void OpenGLMaterial::setFloat(const std::string& name, float value)
+    void OpenGLMaterial::setInt(const std::string& name, std::int32_t value)
+    {
+        OpenGLMaterialValue* materialValue = getOrCreateValue(name);
+        materialValue->type = OpenGLMaterialValueType::int32;
+        materialValue->intValue = value;
+
+        if constexpr (Debug::LogMaterialValuesSetters)
+        {
+            openGLLogger.debug("Setting int {} as value \"{}\" in material \"{}\"", value, name, _name);
+        }
+    }
+
+    void OpenGLMaterial::setFloat(const std::string& name, std::float_t value)
     {
         OpenGLMaterialValue* materialValue = getOrCreateValue(name);
         materialValue->type = OpenGLMaterialValueType::float32;
@@ -83,7 +98,7 @@ namespace BGLRenderer
 
         if constexpr (Debug::LogMaterialValuesSetters)
         {
-            openGLLogger.debug("Setting float {} as value \"{}\" in material \"{}\"",value, name, _name);
+            openGLLogger.debug("Setting float {} as value \"{}\" in material \"{}\"", value, name, _name);
         }
     }
 

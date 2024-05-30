@@ -57,7 +57,7 @@ namespace BGLRenderer
                 std::vector<GLuint> indices;
                 indices.reserve(primitive->indices->count);
 
-                std::shared_ptr<OpenGLMaterial> openGLMaterial = std::make_shared<OpenGLMaterial>(name, MaterialType::Opaque, program);
+                std::shared_ptr<OpenGLMaterial> openGLMaterial = std::make_shared<OpenGLMaterial>(name, MaterialType::opaque, program);
                 if (primitive->material != nullptr)
                 {
                     loadMaterialFromCGLTFMaterial(name, openGLMaterial, basePath, primitive->material);

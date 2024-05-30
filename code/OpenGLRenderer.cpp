@@ -114,7 +114,7 @@ namespace BGLRenderer
         _whiteTexture->setPixels(GL_RGBA, whiteColors);
         _assetManager->registerAsset("white", _whiteTexture);
 
-        _fallbackMaterial = std::make_shared<OpenGLMaterial>("fallback", MaterialType::Unlit, _assetManager->getProgram("shaders/fallback"));
+        _fallbackMaterial = std::make_shared<OpenGLMaterial>("fallback", MaterialType::unlit, _assetManager->getProgram("shaders/fallback"));
         _assetManager->registerAsset("fallback", _fallbackMaterial);
 
         _quadMesh = std::make_shared<OpenGLMesh>();
@@ -210,7 +210,7 @@ namespace BGLRenderer
                     material = _fallbackMaterial;
                 }
 
-                if (material->type() != MaterialType::Opaque)
+                if (material->type() != MaterialType::opaque)
                 {
                     continue;
                 }
@@ -296,7 +296,7 @@ namespace BGLRenderer
                     material = _fallbackMaterial;
                 }
 
-                if (material->type() != MaterialType::Unlit)
+                if (material->type() != MaterialType::unlit)
                 {
                     continue;
                 }

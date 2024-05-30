@@ -131,12 +131,12 @@ namespace BGLRenderer
         GL_CALL(glUseProgram(_program));
     }
 
-    void OpenGLProgram::setInt(GLint location, int value)
+    void OpenGLProgram::setInt(GLint location, GLint value)
     {
         glUniform1i(location, value);
     }
 
-    void OpenGLProgram::setFloat(GLint location, float value)
+    void OpenGLProgram::setFloat(GLint location, GLfloat value)
     {
         glUniform1f(location, value);
     }

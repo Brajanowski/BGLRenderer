@@ -18,9 +18,7 @@ namespace BGLRenderer
 
     bool ProgramLoader::tryToUpdateVertexShader(const std::shared_ptr<OpenGLProgram>& program, const std::string& shaderName)
     {
-        std::vector<std::uint8_t> shaderContent = _contentLoader->load(shaderName);
-
-        std::string compiledShaderSource = loadShaderSourceCode(std::string(shaderContent.begin(), shaderContent.end()));
+        std::string compiledShaderSource = loadShaderSourceCode(shaderName);
 
         if (compiledShaderSource.empty())
         {
@@ -32,9 +30,7 @@ namespace BGLRenderer
 
     bool ProgramLoader::tryToUpdateFragmentShader(const std::shared_ptr<OpenGLProgram>& program, const std::string& shaderName)
     {
-        std::vector<std::uint8_t> shaderContent = _contentLoader->load(shaderName);
-
-        std::string compiledShaderSource = loadShaderSourceCode(std::string(shaderContent.begin(), shaderContent.end()));
+        std::string compiledShaderSource = loadShaderSourceCode(shaderName);
 
         if (compiledShaderSource.empty())
         {

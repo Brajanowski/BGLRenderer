@@ -112,16 +112,17 @@ namespace BGLRenderer
 
     void Engine::statsWindow()
     {
-        ImGui::Begin("Stats");
+        if (ImGui::Begin("Stats", &_showStatsWindow))
+        {
+            ImGui::Text(_renderer->systemInfo().c_str());
 
-        ImGui::Text(_renderer->systemInfo().c_str());
+            ImGui::Text("FPS: %d", _profilerData.fps);
+            ImGui::Text("Frame: %.4fms", _profilerData.totalFrameTime);
+            ImGui::Text("Render: %.4fms", _profilerData.renderTime);
+            ImGui::Text("ImGui: %.4fms", _profilerData.imguiTime);
 
-        ImGui::Text("FPS: %d", _profilerData.fps);
-        ImGui::Text("Frame: %.4fms", _profilerData.totalFrameTime);
-        ImGui::Text("Render: %.4fms", _profilerData.renderTime);
-        ImGui::Text("ImGui: %.4fms", _profilerData.imguiTime);
-
-        ImGui::End();
+            ImGui::End();
+        }
     }
 
     double Engine::secondsSinceStart()
@@ -169,7 +170,7 @@ namespace BGLRenderer
         _application->onIMGUI();
         _renderer->onIMGUI();
 
-        if (_showProfilerWindow)
+        if (_showStatsWindow)
         {
             statsWindow();
         }

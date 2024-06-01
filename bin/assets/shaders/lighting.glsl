@@ -27,7 +27,7 @@ vec3 calculateDirectionalLight(DirectionalLight light, SurfaceDetails surface, V
 
     float nDotL = max(0, dot(surface.normal, normalize(-light.direction)));
 
-    vec3 diffuse = light.color * light.intensity * nDotL;
+    vec3 diffuse = light.color * surface.color * light.intensity * nDotL;
     vec3 specular = vec3(spec) * specularStrength;
 
     return diffuse + specular;

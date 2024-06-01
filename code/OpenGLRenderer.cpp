@@ -160,12 +160,13 @@ namespace BGLRenderer
         _gbuffer->createDepthAttachment(GL_DEPTH_COMPONENT);
         _gbuffer->validate();
 
-        _lightBuffer = std::make_shared<OpenGLFramebuffer>("Light Buffer", _frameWidth, _frameHeight);
-        _lightBuffer->createColorAttachment("Light", GL_RGB);
-        _lightBuffer->validate();
-
         _frameTexture = std::make_shared<OpenGLTexture2D>("Frame Texture", _frameWidth, _frameHeight, GL_RGBA);
         _frameTexture->generatePixelsBuffer();
+        
+        _lightBuffer = std::make_shared<OpenGLFramebuffer>("Light Buffer", _frameWidth, _frameHeight);
+        _lightBuffer->createColorAttachment("Light", GL_RGB);
+        //_lightBuffer->addColorAttachment(_frameTexture);
+        _lightBuffer->validate();
 
         _frameFramebuffer = std::make_shared<OpenGLFramebuffer>("Frame Framebuffer", _frameWidth, _frameHeight);
         _frameFramebuffer->addColorAttachment(_frameTexture, true);
@@ -173,6 +174,7 @@ namespace BGLRenderer
         _frameFramebuffer->setDepthAttachment(_gbuffer->depthAttachment().texture);
         _frameFramebuffer->validate();
 
+        _ambientLightProgram = _assetManager->getProgram("shaders/light_ambient");
         _directionalLightProgram = _assetManager->getProgram("shaders/light_directional");
         _combineFinalFrameProgram = _assetManager->getProgram("shaders/combine_finalframe");
     }
@@ -233,14 +235,20 @@ namespace BGLRenderer
         _lightBuffer->bind();
         _quadMesh->bind();
 
+        GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
+        GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
+
         GL_CALL(glDepthMask(GL_FALSE));
 
         GL_CALL(glDisable(GL_DEPTH_TEST));
         GL_CALL(glDisable(GL_BLEND));
 
+        _gbuffer->depthAttachment().texture->bind(3);
+
         // ambient light
-        _baseColorProgram->bind();
-        _baseColorProgram->setVector4(_baseColorProgram->getUniformLocation("u_color"), glm::vec4(_ambientLight.x, _ambientLight.y, _ambientLight.z, 1));
+        _ambientLightProgram->bind();
+        _ambientLightProgram->setVector4(_ambientLightProgram->getUniformLocation("u_ambientColor"), glm::vec4(_ambientLight.x, _ambientLight.y, _ambientLight.z, 1));
+        _ambientLightProgram->setInt(_ambientLightProgram->getUniformLocation("u_depth"), 3);
 
         _quadMesh->draw();
 
@@ -248,14 +256,17 @@ namespace BGLRenderer
         GL_CALL(glEnable(GL_BLEND));
         GL_CALL(glBlendFunc(GL_ONE, GL_ONE));
 
-        _gbuffer->colorAttachments()[GBufferNormalsAttachment].texture->bind(0);
-        _gbuffer->depthAttachment().texture->bind(1);
+        //_gbuffer->colorAttachments()[GBufferAlbedoAttachment].texture->bind(0);
+        _gbuffer->colorAttachments()[GBufferNormalsAttachment].texture->bind(1);
+        // _gbuffer->colorAttachments()[GBufferAlbedoAttachment].texture->bind(2); - surface details
+        //_gbuffer->depthAttachment().texture->bind(3);
 
         glm::mat4 inverseViewProjection = glm::inverse(_viewProjection);
 
         _directionalLightProgram->bind();
-        _directionalLightProgram->setInt(_directionalLightProgram->getUniformLocation("u_normal"), 0);
-        _directionalLightProgram->setInt(_directionalLightProgram->getUniformLocation("u_depth"), 1);
+        //_directionalLightProgram->setInt(_directionalLightProgram->getUniformLocation("u_albedo"), 0);
+        _directionalLightProgram->setInt(_directionalLightProgram->getUniformLocation("u_normal"), 1);
+        _directionalLightProgram->setInt(_directionalLightProgram->getUniformLocation("u_depth"), 3);
         _directionalLightProgram->setVector3(_directionalLightProgram->getUniformLocation("u_direction"), _directionalLightDirection);
         _directionalLightProgram->setVector3(_directionalLightProgram->getUniformLocation("u_color"), _directionalLightColor);
         _directionalLightProgram->setFloat(_directionalLightProgram->getUniformLocation("u_intensity"), _directionalLightIntensity);

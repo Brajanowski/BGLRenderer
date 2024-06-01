@@ -21,29 +21,30 @@ namespace BGLRenderer
 
     void ConsoleWindow::onIMGUI(bool& showConsole)
     {
-        ImGui::Begin("Console", &showConsole);
-
-        if (ImGui::Button("Clear"))
+        if (ImGui::Begin("Console", &showConsole))
         {
-            _messages.clear();
-        }
-
-        if (ImGui::BeginChild("ScrollRegion##"))
-        {
-            for (auto& message : _messages)
+            if (ImGui::Button("Clear"))
             {
-                ImGui::TextUnformatted(message.c_str());
+                _messages.clear();
             }
 
-            if (_scroll_to_bottom)
+            if (ImGui::BeginChild("ScrollRegion##"))
             {
-                ImGui::SetScrollHereY(1.0f);
-                _scroll_to_bottom = false;
-            }
-        }
-        ImGui::EndChild();
+                for (auto& message : _messages)
+                {
+                    ImGui::TextUnformatted(message.c_str());
+                }
 
-        ImGui::End();
+                if (_scroll_to_bottom)
+                {
+                    ImGui::SetScrollHereY(1.0f);
+                    _scroll_to_bottom = false;
+                }
+            }
+            ImGui::EndChild();
+
+            ImGui::End();
+        }
     }
 
     void ConsoleWindow::write(const std::string& message)

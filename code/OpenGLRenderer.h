@@ -65,6 +65,7 @@ namespace BGLRenderer
         std::shared_ptr<OpenGLFramebuffer> _lightBuffer;
         std::shared_ptr<OpenGLFramebuffer> _frameFramebuffer;
 
+        std::shared_ptr<OpenGLProgram> _ambientLightProgram;
         std::shared_ptr<OpenGLProgram> _directionalLightProgram;
         std::shared_ptr<OpenGLProgram> _combineFinalFrameProgram;
         

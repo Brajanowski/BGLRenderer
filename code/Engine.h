@@ -40,6 +40,12 @@ namespace BGLRenderer
 
         inline const std::shared_ptr<Input>& input() const { return _input; }
         inline const std::shared_ptr<AssetManager>& assets() const { return _assetManager; }
+
+        inline void setStatsWindowVisibility(bool visible) { _showStatsWindow = visible; }
+        inline bool isStatsWindowVisible() const { return _showStatsWindow; }
+
+        inline bool isConsoleVisible() const { return _showConsoleWindow; }
+        inline void setConsoleVisibility(bool visible) { _showConsoleWindow = visible; }
         
     private:
         Log _logger{"Engine"};
@@ -55,7 +61,7 @@ namespace BGLRenderer
 
         EngineProfilerData _profilerData;
 
-        bool _showProfilerWindow = true;
+        bool _showStatsWindow = true;
         bool _showConsoleWindow = true;
 
         void statsWindow();

@@ -11,7 +11,7 @@ namespace BGLRenderer
     {
         constexpr bool LoadSponza = false;
     }
-    
+
     ApplicationSandbox::ApplicationSandbox()
     {
     }
@@ -107,6 +107,26 @@ namespace BGLRenderer
 
     void ApplicationSandbox::onIMGUI()
     {
+        if (ImGui::BeginMainMenuBar())
+        {
+            if (ImGui::BeginMenu("Windows"))
+            {
+                if (ImGui::MenuItem("Console"))
+                {
+                    _engine->setConsoleVisibility(true);
+                }
+
+                if (ImGui::MenuItem("Stats"))
+                {
+                    _engine->setStatsWindowVisibility(true);
+                }
+
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMainMenuBar();
+        }
+
         ImGui::Begin("Camera");
 
         ImGui::InputFloat("Speed", &_cameraSpeed);
@@ -114,7 +134,7 @@ namespace BGLRenderer
         ImGui::InputFloat("FOV", &_camera->fieldOfView);
         ImGui::InputFloat("Near Z", &_camera->nearZ);
         ImGui::InputFloat("Far Z", &_camera->farZ);
-        
+
         ImGui::InputFloat3("Position", glm::value_ptr(_camera->transform.position));
         ImGui::InputFloat("Pitch", &_cameraPitch);
         ImGui::InputFloat("Yaw", &_cameraYaw);
@@ -124,7 +144,7 @@ namespace BGLRenderer
         glm::vec3 forward = _camera->forward();
         glm::vec3 right = _camera->right();
         glm::vec3 up = _camera->up();
-        
+
         ImGui::Text("Forward: %.4f, %.4f, %.4f", forward.x, forward.y, forward.z);
         ImGui::Text("Right: %.4f, %.4f, %.4f", right.x, right.y, right.z);
         ImGui::Text("Up: %.4f, %.4f, %.4f", up.x, up.y, up.z);

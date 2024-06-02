@@ -1,4 +1,5 @@
 {
+    "asset_type": "material",
     "program": {
         "vertexShader": "shaders/gbuffer_default.vert",
         "fragmentShader": "shaders/gbuffer_default.frag"

@@ -4,7 +4,7 @@ namespace BGLRenderer
 {
     namespace Private
     {
-        static Log logger{"AssetsLoader"};
+        static Log logger{"AssetsManager"};
     }
 
     AssetManager::AssetManager(const std::shared_ptr<AssetContentLoader>& contentLoader) :
@@ -13,7 +13,8 @@ namespace BGLRenderer
         _programAssetManager(std::make_shared<ProgramAssetManager>(std::make_shared<ProgramLoader>(_contentLoader), std::make_shared<ObjectInMemoryCache<std::string, OpenGLProgram>>())),
         _textureAssetManager(std::make_shared<TextureAssetManager>(std::make_shared<TextureLoader>(_contentLoader), std::make_shared<ObjectInMemoryCache<std::string, OpenGLTexture2D>>())),
         _materialAssetManager(std::make_shared<MaterialAssetManager>(std::make_shared<MaterialLoader>(_contentLoader, _textureAssetManager, _programAssetManager), std::make_shared<ObjectInMemoryCache<std::string, OpenGLMaterial>>())),
-        _modelAssetManager(std::make_shared<ModelAssetManager>(std::make_shared<ModelLoader>(_contentLoader, _textureAssetManager), std::make_shared<ObjectInMemoryCache<std::string, OpenGLRenderObject>>()))
+        _modelAssetManager(std::make_shared<ModelAssetManager>(std::make_shared<ModelLoader>(_contentLoader, _textureAssetManager, _materialAssetManager), std::make_shared<ObjectInMemoryCache<std::string, OpenGLRenderObject>>())),
+        _sceneLoader(_contentLoader, _modelAssetManager, _materialAssetManager)
     {
     }
 
@@ -83,6 +84,13 @@ namespace BGLRenderer
         return material;
     }
 
+    std::shared_ptr<Scene> AssetManager::getScene(const std::string& name)
+    {
+        std::shared_ptr<Scene> scene = _sceneLoader.load(name);
+        addSceneListener(scene, name);
+        return scene;
+    }
+
     Log& AssetManager::logger()
     {
         return Private::logger;
@@ -115,6 +123,16 @@ namespace BGLRenderer
             logger.debug("Material file changed, trying to update: {}", materialName);
 
             materialAssetManager->loader()->tryToUpdateMaterial(material, materialName);
+        });
+    }
+
+    void AssetManager::addSceneListener(const std::shared_ptr<Scene>& scene, const std::string& name)
+    {
+        ASSERT(scene != nullptr, "Cannot listen for null scene changes");
+
+        _assetFileChangesObserver.listenFileChanged(name, [scene=scene, &sceneLoader=_sceneLoader](const AssetFileChangedEvent& ev)
+        {
+            sceneLoader.loadInto(scene, ev.path.string());
         });
     }
 }

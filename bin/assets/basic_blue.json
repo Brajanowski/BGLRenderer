@@ -1,0 +1,25 @@
+{
+    "asset_type": "material",
+    "program": {
+        "vertexShader": "shaders/gbuffer_default.vert",
+        "fragmentShader": "shaders/gbuffer_default.frag"
+    },
+    "type": "opaque",
+    "values": {
+        "tint": {
+            "value_type": "vec4",
+            "value": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0,
+                "w": 1.0
+            }
+        },
+        "baseColor": {
+            "value_type": "texture2D",
+            "value": {
+                "texture": "white"
+            }
+        }
+    }
+}

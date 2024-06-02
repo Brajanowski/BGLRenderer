@@ -32,7 +32,10 @@ namespace BGLRenderer
         void endFrame();
 
         inline void setCamera(const std::shared_ptr<PerspectiveCamera>& camera) { _camera = camera; }
-        inline void submit(const std::shared_ptr<OpenGLRenderObject>& renderObject) { _renderObjects.push_back(renderObject); }
+        inline void submit(const std::shared_ptr<OpenGLMaterial>& material, const std::shared_ptr<OpenGLMesh>& mesh, const glm::mat4& model)
+        {
+            _meshEntries.push_back({material, mesh, model});
+        }
 
         inline std::shared_ptr<OpenGLMesh> quadMesh() { return _quadMesh; }
 
@@ -55,7 +58,14 @@ namespace BGLRenderer
 
         std::shared_ptr<PerspectiveCamera> _camera;
         glm::mat4 _viewProjection;
-        std::vector<std::shared_ptr<OpenGLRenderObject>> _renderObjects;
+
+        struct MeshEntry
+        {
+            std::shared_ptr<OpenGLMaterial> material;
+            std::shared_ptr<OpenGLMesh> mesh;
+            glm::mat4 model;
+        };
+        std::vector<MeshEntry> _meshEntries;
 
         BufferToDisplay _bufferToDisplay = BufferToDisplay::finalFrame;
 
@@ -83,5 +93,7 @@ namespace BGLRenderer
         void presentFinalFrame();
 
         void setCameraUniforms(const std::shared_ptr<OpenGLProgram>& program, const std::shared_ptr<PerspectiveCamera>& camera);
+
+        void renderMeshEntries(MaterialType materialType);
     };
 }

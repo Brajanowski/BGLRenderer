@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "Application.h"
-#include "OpenGLMesh.h"
 #include "PerspectiveCamera.h"
 
 namespace BGLRenderer
@@ -20,8 +19,8 @@ namespace BGLRenderer
         virtual void onWindowResize(int width, int height) override;
 
     private:
-        std::shared_ptr<OpenGLRenderObject> _monkey;
-        std::shared_ptr<OpenGLRenderObject> _sponza;
+        std::shared_ptr<SceneObject> _monkey;
+        std::shared_ptr<Scene> _scene;
 
         std::shared_ptr<PerspectiveCamera> _camera;
         float _cameraPitch = 0.0f;

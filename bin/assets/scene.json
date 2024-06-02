@@ -1,0 +1,63 @@
+{
+    "asset_type": "scene",
+    "hdr": "forgotten_miniland_4k.hdr",
+    "scene_objects": [
+        {
+            "name": "Monkey",
+            "model": "monkey.gltf",
+            "materials": [
+                "basic_red.json"
+            ],
+            "transform": {
+                "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 2.5
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                }
+            }
+        },
+        {
+            "name": "Sphere",
+            "model": "sphere.gltf",
+            "materials": [
+                "basic_red.json"
+            ],
+            "transform": {
+                "position": {
+                    "x": 0,
+                    "y": 1,
+                    "z": 0
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                }
+            }
+        },
+        {
+            "name": "Sphere",
+            "model": "sphere.gltf",
+            "materials": [
+                "basic_blue.json"
+            ],
+            "transform": {
+                "position": {
+                    "x": 2,
+                    "y": 1,
+                    "z": 0
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                }
+            }
+        }
+    ]
+}

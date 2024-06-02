@@ -16,7 +16,7 @@ namespace BGLRenderer
         _program = glCreateProgram();
         ASSERT(_program != 0, "Failed to create opengl program");
 
-        openGLLogger.debug("Vertex shader code:\n{}", vertexShaderCode);
+        //openGLLogger.debug("Vertex shader code:\n{}", vertexShaderCode);
         _vertexShader = createShader(vertexShaderCode, GL_VERTEX_SHADER);
 
         if (_vertexShader == 0)
@@ -28,7 +28,7 @@ namespace BGLRenderer
 
         GL_CALL(glAttachShader(_program, _vertexShader));
 
-        openGLLogger.debug("Fragment shader code:\n{}", fragmentShaderCode);
+        //openGLLogger.debug("Fragment shader code:\n{}", fragmentShaderCode);
         _fragmentShader = createShader(fragmentShaderCode, GL_FRAGMENT_SHADER);
 
         if (_fragmentShader == 0)

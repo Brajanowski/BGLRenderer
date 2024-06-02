@@ -16,6 +16,9 @@
 
 #include <string>
 
+#include "Scene.h"
+#include "SceneLoader.h"
+
 namespace BGLRenderer
 {
     class AssetManager
@@ -50,6 +53,8 @@ namespace BGLRenderer
 
         std::shared_ptr<OpenGLMaterial> getMaterial(const std::string& name);
 
+        std::shared_ptr<Scene> getScene(const std::string& name);
+
         static Log& logger();
 
     private:
@@ -60,8 +65,10 @@ namespace BGLRenderer
         std::shared_ptr<TextureAssetManager> _textureAssetManager;
         std::shared_ptr<MaterialAssetManager> _materialAssetManager;
         std::shared_ptr<ModelAssetManager> _modelAssetManager;
+        SceneLoader _sceneLoader;
 
         void addProgramShadersListeners(const std::shared_ptr<OpenGLProgram>& program, const std::string& vertexShaderName, const std::string& fragmentShaderName);
         void addMaterialListener(const std::shared_ptr<OpenGLMaterial>& material, const std::string& name);
+        void addSceneListener(const std::shared_ptr<Scene>& scene, const std::string& name);
     };
 }

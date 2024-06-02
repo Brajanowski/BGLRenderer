@@ -21,7 +21,19 @@ namespace BGLRenderer
         _camera = std::make_shared<PerspectiveCamera>();
         _camera->transform.position = {0.0f, 4.963f, 5.0f};
 
-        auto monkeyMaterial = _engine->assets()->getMaterial("basicRed.json");
+        _scene = _engine->assets()->getScene("scene.json");
+
+        std::shared_ptr<OpenGLMaterial> monkeyMaterial = _engine->assets()->getMaterial("basic_blue.json");
+        std::shared_ptr<OpenGLRenderObject> monkeyRenderObject = _engine->assets()->getModel("monkey.gltf", _engine->assets()->getProgram("shaders/gbuffer_default"));
+
+        _monkey = _scene->createSceneObject("Monkey");
+        _monkey->transform().position = {0, 5, 0};
+
+        std::vector<RenderObjectSubmesh> monkeySubmeshes = monkeyRenderObject->submeshes();
+        monkeySubmeshes[0].material = monkeyMaterial;
+        _monkey->setSubmeshes(monkeySubmeshes);
+
+        /*auto monkeyMaterial = _engine->assets()->getMaterial("basicRed.json");
         _monkey = _engine->assets()->getModel("monkey.gltf", _engine->assets()->getProgram("shaders/gbuffer_default"));
         _monkey->submeshes()[0].material = monkeyMaterial;
 
@@ -33,7 +45,7 @@ namespace BGLRenderer
             glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0), glm::vec3(sponzaScaleFactor, sponzaScaleFactor, sponzaScaleFactor));
 
             _sponza->setModelMatrix(scaleMatrix);
-        }
+        }*/
     }
 
     void ApplicationSandbox::onShutdown()
@@ -87,21 +99,19 @@ namespace BGLRenderer
         }
 
         float t = glm::sin(static_cast<float>(_engine->secondsSinceStart()) * 0.05f);
-        glm::mat4 monkeyTranslation = glm::translate(glm::mat4(1.0f), glm::vec3(0, 5, 0));
-        glm::mat4 monkeyRotation = glm::rotate(glm::mat4(1.0f), t * glm::pi<float>() * 2.0f, glm::vec3(0, 1, 0));
-
-        _monkey->setModelMatrix(monkeyRotation * monkeyTranslation);
+        _monkey->transform().rotation = glm::rotate(glm::mat4(1.0f), t * glm::pi<float>() * 2.0f, glm::vec3(0, 1, 0));
     }
 
     void ApplicationSandbox::onRender(const std::shared_ptr<OpenGLRenderer>& renderer)
     {
         renderer->setCamera(_camera);
 
-        renderer->submit(_monkey);
-
-        if constexpr (Debug::LoadSponza)
+        for (const auto& sceneObject : _scene->objects())
         {
-            renderer->submit(_sponza);
+            for (const auto& submesh : sceneObject->submeshes())
+            {
+                renderer->submit(submesh.material, submesh.mesh, sceneObject->transform().modelMatrix());
+            }
         }
     }
 

@@ -12,7 +12,7 @@ namespace BGLRenderer
 
         inline glm::mat4x4 modelMatrix() const
         {
-            return glm::mat4_cast(rotation) * glm::scale(glm::mat4x4(1.0f), scale) * glm::translate(glm::mat4x4(1.0f), position);
+            return glm::mat4_cast(rotation) * glm::translate(glm::mat4x4(1.0f), position) * glm::scale(glm::mat4x4(1.0f), scale);
         }
     };
 }

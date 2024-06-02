@@ -17,7 +17,7 @@ namespace BGLRenderer
         _systemInfo += "Vendor: ";
         _systemInfo += reinterpret_cast<const char*>(glGetString(GL_VENDOR));
         _systemInfo += '\n';
-        
+
         _systemInfo += "Renderer: ";
         _systemInfo += reinterpret_cast<const char*>(glGetString(GL_RENDERER));
         _systemInfo += '\n';
@@ -25,7 +25,7 @@ namespace BGLRenderer
         _systemInfo += "Version: ";
         _systemInfo += reinterpret_cast<const char*>(glGetString(GL_VERSION));
         _systemInfo += '\n';
-        
+
         _systemInfo += "Shading Language Version: ";
         _systemInfo += reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
     }
@@ -87,7 +87,7 @@ namespace BGLRenderer
 
     void OpenGLRenderer::beginFrame()
     {
-        _renderObjects.clear();
+        _meshEntries.clear();
     }
 
     void OpenGLRenderer::endFrame()
@@ -110,8 +110,8 @@ namespace BGLRenderer
         GLubyte whiteColors[whiteTextureSize * whiteTextureSize];
         std::memset(whiteColors, 0xFF, sizeof(GLubyte) * whiteTextureSize * whiteTextureSize);
 
-        _whiteTexture = std::make_shared<OpenGLTexture2D>("white", whiteTextureSize, whiteTextureSize, GL_RGBA);
-        _whiteTexture->setPixels(GL_RGBA, whiteColors);
+        _whiteTexture = std::make_shared<OpenGLTexture2D>("white", whiteTextureSize, whiteTextureSize, GL_RGBA, GL_REPEAT, GL_LINEAR);
+        _whiteTexture->setPixels(GL_RGB, whiteColors);
         _assetManager->registerAsset("white", _whiteTexture);
 
         _fallbackMaterial = std::make_shared<OpenGLMaterial>("fallback", MaterialType::unlit, _assetManager->getProgram("shaders/fallback"));
@@ -162,7 +162,7 @@ namespace BGLRenderer
 
         _frameTexture = std::make_shared<OpenGLTexture2D>("Frame Texture", _frameWidth, _frameHeight, GL_RGBA);
         _frameTexture->generatePixelsBuffer();
-        
+
         _lightBuffer = std::make_shared<OpenGLFramebuffer>("Light Buffer", _frameWidth, _frameHeight);
         _lightBuffer->createColorAttachment("Light", GL_RGB);
         //_lightBuffer->addColorAttachment(_frameTexture);
@@ -200,32 +200,7 @@ namespace BGLRenderer
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        for (const auto& renderObject : _renderObjects)
-        {
-            glm::mat4 model = renderObject->modelMatrix();
-
-            for (const auto& submesh : renderObject->submeshes())
-            {
-                std::shared_ptr<OpenGLMaterial> material = submesh.material;
-                if (material == nullptr || !material->valid())
-                {
-                    material = _fallbackMaterial;
-                }
-
-                if (material->type() != MaterialType::opaque)
-                {
-                    continue;
-                }
-
-                material->bind();
-                material->program()->setVector2(material->program()->getUniformLocation("u_resolution"), glm::vec2{static_cast<float>(_frameWidth), static_cast<float>(_frameHeight)});
-                material->program()->setMatrix4x4(material->program()->getUniformLocation("u_model"), model);
-                material->program()->setMatrix4x4(material->program()->getUniformLocation("u_viewProjection"), _viewProjection);
-                
-                submesh.mesh->bind();
-                submesh.mesh->draw();
-            }
-        }
+        renderMeshEntries(MaterialType::opaque);
 
         _gbuffer->unbind();
     }
@@ -295,32 +270,7 @@ namespace BGLRenderer
         GL_CALL(glEnable(GL_CULL_FACE));
         GL_CALL(glCullFace(GL_BACK));
 
-        for (const auto& renderObject : _renderObjects)
-        {
-            glm::mat4 model = renderObject->modelMatrix();
-
-            for (const auto& submesh : renderObject->submeshes())
-            {
-                std::shared_ptr<OpenGLMaterial> material = submesh.material;
-                if (material == nullptr || !material->valid())
-                {
-                    material = _fallbackMaterial;
-                }
-
-                if (material->type() != MaterialType::unlit)
-                {
-                    continue;
-                }
-
-                material->bind();
-                material->program()->setVector2(material->program()->getUniformLocation("u_resolution"), glm::vec2{static_cast<float>(_frameWidth), static_cast<float>(_frameHeight)});
-                material->program()->setMatrix4x4(material->program()->getUniformLocation("u_model"), model);
-                material->program()->setMatrix4x4(material->program()->getUniformLocation("u_viewProjection"), _viewProjection);
-
-                submesh.mesh->bind();
-                submesh.mesh->draw();
-            }
-        }
+        renderMeshEntries(MaterialType::unlit);
 
         _frameFramebuffer->unbind();
     }
@@ -403,5 +353,30 @@ namespace BGLRenderer
     {
         program->setVector3(program->getUniformLocation("u_cameraPosition"), camera->transform.position);
         program->setVector3(program->getUniformLocation("u_cameraDirection"), camera->forward());
+    }
+
+    void OpenGLRenderer::renderMeshEntries(MaterialType materialType)
+    {
+        for (const auto& meshEntry : _meshEntries)
+        {
+            std::shared_ptr<OpenGLMaterial> material = meshEntry.material;
+            if (material == nullptr || !material->valid())
+            {
+                material = _fallbackMaterial;
+            }
+
+            if (material->type() != materialType)
+            {
+                continue;
+            }
+
+            material->bind();
+            material->program()->setVector2(material->program()->getUniformLocation("u_resolution"), glm::vec2{static_cast<float>(_frameWidth), static_cast<float>(_frameHeight)});
+            material->program()->setMatrix4x4(material->program()->getUniformLocation("u_model"), meshEntry.model);
+            material->program()->setMatrix4x4(material->program()->getUniformLocation("u_viewProjection"), _viewProjection);
+
+            meshEntry.mesh->bind();
+            meshEntry.mesh->draw();
+        }
     }
 }

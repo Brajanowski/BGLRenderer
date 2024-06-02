@@ -119,9 +119,16 @@ namespace BGLRenderer
         {
             return _assetCache->get(name);
         }
+        
+        std::shared_ptr<OpenGLRenderObject> renderObject = _assetLoader->load(name);
+        if (renderObject == nullptr)
+        {
+            AssetManager::logger().error("Couldn't load model: \"{}\"", name);
+            return nullptr;
+        }
 
-        AssetManager::logger().error("Couldn't find registered model: \"{}\"", name);
-        return nullptr;
+        registerAsset(name, renderObject);
+        return renderObject;
     }
 
     std::shared_ptr<OpenGLRenderObject> ModelAssetManager::get(const std::string& name, const std::shared_ptr<OpenGLProgram>& program)

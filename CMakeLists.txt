@@ -58,6 +58,10 @@ add_executable(BGLrenderer
     code/OpenGLRenderObject.h
     code/OpenGLRenderer.h
     code/OpenGLRenderer.cpp
+    code/Scene.h
+    code/Scene.cpp
+    code/SceneObject.h
+    code/SceneObject.cpp
     code/AssetContentLoader.h
     code/AssetContentLoader.cpp
     code/ConcreteAssetManager.h
@@ -75,6 +79,8 @@ add_executable(BGLrenderer
     code/ModelLoader.cpp
     code/MaterialLoader.h
     code/MaterialLoader.cpp
+    code/SceneLoader.h
+    code/SceneLoader.cpp
     code/ObjectInMemoryCache.h
     code/ApplicationSandbox.h
     code/ApplicationSandbox.cpp

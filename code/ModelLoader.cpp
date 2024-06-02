@@ -13,17 +13,24 @@
 namespace BGLRenderer
 {
     ModelLoader::ModelLoader(const std::shared_ptr<AssetContentLoader>& contentLoader,
-                             const std::shared_ptr<TextureAssetManager>& textureAssetManager) :
+                             const std::shared_ptr<TextureAssetManager>& textureAssetManager,
+                             const std::shared_ptr<MaterialAssetManager>& materialAssetManager) :
         _contentLoader(contentLoader),
-        _textureAssetManager(textureAssetManager)
+        _textureAssetManager(textureAssetManager),
+        _materialAssetManager(materialAssetManager)
     {
     }
+    
+    std::shared_ptr<OpenGLRenderObject> ModelLoader::load(const std::string& name)
+    {
+        return load(name, nullptr, _materialAssetManager->get("fallback"));
+    }
 
-    std::shared_ptr<OpenGLRenderObject> ModelLoader::load(const std::string& name, const std::shared_ptr<OpenGLProgram>& program)
+    std::shared_ptr<OpenGLRenderObject> ModelLoader::load(const std::string& name, const std::shared_ptr<OpenGLProgram>& program, const std::shared_ptr<OpenGLMaterial>& forceMaterial)
     {
         HighResolutionTimer loadingTimer;
 
-        std::string path = ("assets/" + name);
+        std::string path = "assets/" + name;
         std::string basePath = name.find('/') == std::string::npos ? name : name.substr(0, name.find_last_of('/') + 1);
 
         _logger.debug("Loading model: {}, base path: {}", path, basePath);
@@ -57,8 +64,13 @@ namespace BGLRenderer
                 std::vector<GLuint> indices;
                 indices.reserve(primitive->indices->count);
 
-                std::shared_ptr<OpenGLMaterial> openGLMaterial = std::make_shared<OpenGLMaterial>(name, MaterialType::opaque, program);
-                if (primitive->material != nullptr)
+                std::shared_ptr<OpenGLMaterial> openGLMaterial;
+                if (program == nullptr)
+                {
+                    openGLMaterial = forceMaterial;
+                }
+                
+                if (primitive->material != nullptr && forceMaterial == nullptr && openGLMaterial != nullptr)
                 {
                     loadMaterialFromCGLTFMaterial(name, openGLMaterial, basePath, primitive->material);
                     if (primitive->material->name != nullptr)

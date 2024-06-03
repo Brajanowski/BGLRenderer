@@ -6,9 +6,26 @@
 
 namespace BGLRenderer
 {
+    namespace Theme
+    {
+        static ImVec4 getMessageColorForSeverity(LogSeverity severity)
+        {
+            if (severity == LogSeverity::warning)
+            {
+                return {0.98f, 0.72f, 0.001f, 1.0f};
+            }
+            else if (severity == LogSeverity::error)
+            {
+                return {0.9f, 0.1f, 0.19f, 1.0f};
+            }
+
+            return {0.9f, 0.9f, 0.9f, 1};
+        }
+    }
+
     ConsoleWindow::ConsoleWindow()
     {
-        Log::listen([&](const std::string& message)
+        Log::listen([&](const LogMessage& message)
         {
             write(message);
         });
@@ -21,6 +38,9 @@ namespace BGLRenderer
 
     void ConsoleWindow::onIMGUI(bool& showConsole)
     {
+        // FIXME:
+        static char filterBuffer[256] = {};
+
         if (ImGui::Begin("Console", &showConsole))
         {
             if (ImGui::Button("Clear"))
@@ -28,11 +48,32 @@ namespace BGLRenderer
                 _messages.clear();
             }
 
+            ImGui::SameLine();
+            ImGui::InputText("Filter", filterBuffer, 256);
+
+            std::string_view filterText = filterBuffer;
+
             if (ImGui::BeginChild("ScrollRegion##"))
             {
-                for (auto& message : _messages)
+                ImGui::Columns(2);
+                ImGui::SetColumnWidth(0, 100);
+
+                for (std::size_t i = 0; i < _messages.size(); ++i)
                 {
-                    ImGui::TextUnformatted(message.c_str());
+                    const LogMessage& logMessage = _messages[i];
+
+                    if (filterText.empty() || logMessage.message.find(filterText) != std::string::npos)
+                    {
+                        ImGui::TextUnformatted(logMessage.category.c_str());
+
+                        ImGui::NextColumn();
+
+                        ImGui::PushStyleColor(ImGuiCol_Text, Theme::getMessageColorForSeverity(logMessage.severity));
+                        ImGui::TextUnformatted(logMessage.message.c_str());
+                        ImGui::PopStyleColor(); // Message text color
+
+                        ImGui::NextColumn();
+                    }
                 }
 
                 if (_scroll_to_bottom)
@@ -47,8 +88,9 @@ namespace BGLRenderer
         }
     }
 
-    void ConsoleWindow::write(const std::string& message)
+    void ConsoleWindow::write(const LogMessage& message)
     {
         _messages.push_back(message);
+        _scroll_to_bottom = true;
     }
 }

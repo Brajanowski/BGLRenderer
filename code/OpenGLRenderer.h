@@ -80,7 +80,7 @@ namespace BGLRenderer
         std::shared_ptr<OpenGLProgram> _combineFinalFrameProgram;
         
         glm::vec3 _ambientLight = {0.25f, 0.25f, 0.25f};
-        glm::vec3 _directionalLightDirection = {0.2f, -0.5f, 1.0f};
+        glm::vec3 _directionalLightDirection = {0.2f, -0.5f, -1.0f};
         glm::vec3 _directionalLightColor = {1.0f, 1.0f, 1.0f};
         float _directionalLightIntensity = 1.0f;
 

@@ -3,6 +3,8 @@
 #include <SDL.h>
 #include <glm.hpp>
 
+#include "Log.h"
+
 namespace BGLRenderer
 {
     constexpr unsigned int MaxKeys = 1024;
@@ -22,6 +24,8 @@ namespace BGLRenderer
         void processSDLEvent(const SDL_Event* ev);
 
     private:
+        static Log _logger;
+
         bool _buttons[MaxButtons] = {};
         bool _buttonsDown[MaxButtons] = {};
         bool _buttonsUp[MaxButtons] = {};
@@ -41,6 +45,8 @@ namespace BGLRenderer
         void processSDLEvent(const SDL_Event* ev);
 
     private:
+        static Log _logger;
+
         bool _keys[MaxKeys] = {};
         bool _keysDown[MaxKeys] = {};
         bool _keysUp[MaxKeys] = {};
@@ -58,6 +64,8 @@ namespace BGLRenderer
         inline const Keyboard* keyboard() const { return &_keyboard; }
 
     private:
+        static Log _logger;
+        
         Mouse _mouse;
         Keyboard _keyboard;
     };

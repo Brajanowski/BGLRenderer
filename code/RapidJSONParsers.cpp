@@ -15,7 +15,7 @@ namespace BGLRenderer
     {
         namespace Private
         {
-            using NameValueType = const char *;
+            using NameValueType = const char*;
         }
 
         static constexpr Private::NameValueType AssetType = "asset_type";
@@ -50,7 +50,58 @@ namespace BGLRenderer
             logger.error("\"{}\" is not \"{}\"", MemberNames::AssetType, requiredAssetType);
         }
 
-        return is; 
+        return is;
+    }
+
+    bool isMemberVector2(const rapidjson::Value& member)
+    {
+        if (!member.IsObject())
+        {
+            return false;
+        }
+
+        if (member.MemberCount() != 2)
+        {
+            return false;
+        }
+
+        return member.HasMember("x") && member["x"].IsNumber() &&
+               member.HasMember("y") && member["y"].IsNumber();
+    }
+
+    bool isMemberVector3(const rapidjson::Value& member)
+    {
+        if (!member.IsObject())
+        {
+            return false;
+        }
+
+        if (member.MemberCount() != 3)
+        {
+            return false;
+        }
+
+        return member.HasMember("x") && member["x"].IsNumber() &&
+               member.HasMember("y") && member["y"].IsNumber() &&
+               member.HasMember("z") && member["z"].IsNumber();
+    }
+
+    bool isMemberVector4(const rapidjson::Value& member)
+    {
+        if (!member.IsObject())
+        {
+            return false;
+        }
+
+        if (member.MemberCount() != 4)
+        {
+            return false;
+        }
+
+        return member.HasMember("x") && member["x"].IsNumber() &&
+               member.HasMember("y") && member["y"].IsNumber() &&
+               member.HasMember("z") && member["z"].IsNumber() &&
+               member.HasMember("w") && member["w"].IsNumber();
     }
 
     bool getStringValuesFromArray(const rapidjson::Value& documentValue, std::vector<std::string>& target)

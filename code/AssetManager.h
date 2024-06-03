@@ -16,6 +16,8 @@
 
 #include <string>
 
+#include "Config.h"
+#include "ConfigLoader.h"
 #include "Scene.h"
 #include "SceneLoader.h"
 
@@ -55,6 +57,8 @@ namespace BGLRenderer
 
         std::shared_ptr<Scene> getScene(const std::string& name);
 
+        std::shared_ptr<Config> getConfig(const std::string& name);
+
         static Log& logger();
 
     private:
@@ -65,6 +69,7 @@ namespace BGLRenderer
         std::shared_ptr<TextureAssetManager> _textureAssetManager;
         std::shared_ptr<MaterialAssetManager> _materialAssetManager;
         std::shared_ptr<ModelAssetManager> _modelAssetManager;
+        ConfigLoader _configLoader;
         SceneLoader _sceneLoader;
 
         void addProgramShadersListeners(const std::shared_ptr<OpenGLProgram>& program, const std::string& vertexShaderName, const std::string& fragmentShaderName);

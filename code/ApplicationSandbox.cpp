@@ -7,9 +7,13 @@
 
 namespace BGLRenderer
 {
-    namespace Debug
+    static constexpr const char* SandboxConfigName = "sandbox.json";
+
+    namespace ConfigKeys
     {
-        constexpr bool LoadSponza = false;
+        static constexpr const char* StartScene = "start_scene";
+        static constexpr const char* WindowSize = "window_size";
+        static constexpr const char* WindowVSync = "window_vsync";
     }
 
     ApplicationSandbox::ApplicationSandbox()
@@ -21,31 +25,22 @@ namespace BGLRenderer
         _camera = std::make_shared<PerspectiveCamera>();
         _camera->transform.position = {0.0f, 4.963f, 5.0f};
 
-        _scene = _engine->assets()->getScene("scene.json");
+        loadSandboxConfig();
+
+        if (_scene == nullptr)
+        {
+            _scene = std::make_shared<Scene>("Empty scene");
+        }
 
         std::shared_ptr<OpenGLMaterial> monkeyMaterial = _engine->assets()->getMaterial("basic_blue.json");
         std::shared_ptr<OpenGLRenderObject> monkeyRenderObject = _engine->assets()->getModel("monkey.gltf", _engine->assets()->getProgram("shaders/gbuffer_default"));
 
-        _monkey = _scene->createSceneObject("Monkey");
+        _monkey = std::make_shared<SceneObject>("Monkey");
         _monkey->transform().position = {0, 5, 0};
 
         std::vector<RenderObjectSubmesh> monkeySubmeshes = monkeyRenderObject->submeshes();
         monkeySubmeshes[0].material = monkeyMaterial;
         _monkey->setSubmeshes(monkeySubmeshes);
-
-        /*auto monkeyMaterial = _engine->assets()->getMaterial("basicRed.json");
-        _monkey = _engine->assets()->getModel("monkey.gltf", _engine->assets()->getProgram("shaders/gbuffer_default"));
-        _monkey->submeshes()[0].material = monkeyMaterial;
-
-        if constexpr (Debug::LoadSponza)
-        {
-            _sponza = _engine->assets()->getModel("sponza/sponza.gltf", _engine->assets()->getProgram("shaders/gbuffer_default"));
-
-            const float sponzaScaleFactor = 0.1f;
-            glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0), glm::vec3(sponzaScaleFactor, sponzaScaleFactor, sponzaScaleFactor));
-
-            _sponza->setModelMatrix(scaleMatrix);
-        }*/
     }
 
     void ApplicationSandbox::onShutdown()
@@ -108,10 +103,17 @@ namespace BGLRenderer
 
         for (const auto& sceneObject : _scene->objects())
         {
+            glm::mat4x4 model = sceneObject->transform().modelMatrix();
+
             for (const auto& submesh : sceneObject->submeshes())
             {
-                renderer->submit(submesh.material, submesh.mesh, sceneObject->transform().modelMatrix());
+                renderer->submit(submesh.material, submesh.mesh, model);
             }
+        }
+
+        for (const auto& submesh : _monkey->submeshes())
+        {
+            renderer->submit(submesh.material, submesh.mesh, _monkey->transform().modelMatrix());
         }
     }
 
@@ -165,5 +167,41 @@ namespace BGLRenderer
     void ApplicationSandbox::onWindowResize(int width, int height)
     {
         _camera->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+    }
+
+    void ApplicationSandbox::loadSandboxConfig()
+    {
+        _sandboxConfig = _engine->assets()->getConfig("sandbox.json");
+
+        _camera = std::make_shared<PerspectiveCamera>();
+        _camera->transform.position = {0.0f, 4.963f, 5.0f};
+
+        if (_sandboxConfig->exists(ConfigKeys::WindowSize))
+        {
+            glm::vec2 size = _sandboxConfig->getVector2(ConfigKeys::WindowSize);
+
+            int newWidth = static_cast<int>(size.x);
+            int newHeight = static_cast<int>(size.y);
+
+            if (newWidth > 0 && newHeight > 0)
+            {
+                _engine->window()->resize(newWidth, newHeight);
+            }
+            else
+            {
+                _logger.error("Invalid window size in sandbox config file");
+            }
+        }
+
+        if (_sandboxConfig->exists(ConfigKeys::WindowVSync))
+        {
+            int vsync = _sandboxConfig->getInt(ConfigKeys::WindowVSync);
+            _engine->window()->setVSync(vsync);
+        }
+
+        if (_sandboxConfig->exists(ConfigKeys::StartScene))
+        {
+            _scene = _engine->assets()->getScene(_sandboxConfig->getString(ConfigKeys::StartScene));
+        }
     }
 }

@@ -26,6 +26,8 @@ namespace BGLRenderer
 
     void OpenGLTexture2D::resize(GLuint width, GLuint height)
     {
+        openGLLogger.debug("Resizing texture \"{}\" to {}x{}", _name, width, height);
+
         _width = width;
         _height = height;
 

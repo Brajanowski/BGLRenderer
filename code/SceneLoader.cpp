@@ -49,7 +49,7 @@ namespace BGLRenderer
         ASSERT(scene != nullptr, "Cannot load scene asset into null scene");
 
         _logger.debug("Replacing scene \"{}\" with scene asset \"{}\"", scene->name(), name);
-        
+
         scene->clear();
 
         std::vector<std::uint8_t> sceneAssetContent = _assetContentLoader->load(name);
@@ -96,7 +96,7 @@ namespace BGLRenderer
                 _logger.error("\"{}\" must be an array", MemberNames::SceneObjects);
             }
         }
-        
+
         return true;
     }
 
@@ -108,7 +108,13 @@ namespace BGLRenderer
             return false;
         }
 
-        std::string sceneObjectName = getMemberValue<std::string>(entry, MemberNames::Name);
+        if (!entry.HasMember(MemberNames::Name) || !entry[MemberNames::Name].IsString())
+        {
+            _logger.error("Entry doesn't have \"{}\" string value", MemberNames::Name);
+            return false;
+        }
+
+        std::string sceneObjectName = getMemberValue<std::string>(entry[MemberNames::Name]);
         std::shared_ptr<SceneObject> sceneObject = toScene->createSceneObject(sceneObjectName);
 
         if (entry.HasMember(MemberNames::SceneEntryTransform))
@@ -117,17 +123,17 @@ namespace BGLRenderer
 
             if (transformValue.HasMember(MemberNames::SceneEntryTransformPosition))
             {
-                sceneObject->transform().position = getMemberValue<glm::vec3>(transformValue, MemberNames::SceneEntryTransformPosition);
+                sceneObject->transform().position = getMemberValue<glm::vec3>(transformValue[MemberNames::SceneEntryTransformPosition]);
             }
 
             if (transformValue.HasMember(MemberNames::SceneEntryTransformScale))
             {
-                sceneObject->transform().scale = getMemberValue<glm::vec3>(transformValue, MemberNames::SceneEntryTransformScale);
+                sceneObject->transform().scale = getMemberValue<glm::vec3>(transformValue[MemberNames::SceneEntryTransformScale]);
             }
 
             if (transformValue.HasMember(MemberNames::SceneEntryTransformRotationEulerAngles))
             {
-                glm::vec3 eulerAngles = getMemberValue<glm::vec3>(transformValue, MemberNames::SceneEntryTransformRotationEulerAngles);
+                glm::vec3 eulerAngles = getMemberValue<glm::vec3>(transformValue[MemberNames::SceneEntryTransformRotationEulerAngles]);
                 eulerAngles.x = glm::radians(eulerAngles.x);
                 eulerAngles.y = glm::radians(eulerAngles.y);
                 eulerAngles.z = glm::radians(eulerAngles.z);
@@ -136,9 +142,9 @@ namespace BGLRenderer
             }
         }
 
-        if (entry.HasMember(MemberNames::SceneEntryModel))
+        if (entry.HasMember(MemberNames::SceneEntryModel) && entry[MemberNames::SceneEntryModel].IsString())
         {
-            std::string modelName = getMemberValue<std::string>(entry, MemberNames::SceneEntryModel);
+            std::string modelName = getMemberValue<std::string>(entry[MemberNames::SceneEntryModel]);
             std::shared_ptr<OpenGLRenderObject> renderObject = _modelAssetManager->get(modelName);
 
             if (renderObject == nullptr)

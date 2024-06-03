@@ -21,6 +21,19 @@ namespace BGLRenderer
         SDL_GL_SetSwapInterval(enable ? 1 : 0);
     }
 
+    void SDLWindow::resize(int width, int height)
+    {
+        SDL_SetWindowSize(_sdlWindow, width, height);
+
+        _width = width;
+        _height = height;
+
+        if (_onWindowResizedCallback != nullptr)
+        {
+            _onWindowResizedCallback(_width, _height);
+        }
+    }
+
     void SDLWindow::processEvents()
     {
         SDL_Event ev;

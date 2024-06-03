@@ -1,0 +1,8 @@
+{
+    "start_scene": "scene.json",
+    "window_size": {
+        "x": 1920,
+        "y": 1080
+    },
+    "window_vsync": 0
+}

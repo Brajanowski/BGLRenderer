@@ -18,16 +18,15 @@ namespace BGLRenderer
 
     int Engine::run()
     {
-        Log::listen([](const std::string& message)
+        Log::listen([](const LogMessage& logMessage)
         {
-            std::cout << message << '\n';
+            std::cout << LogUtils::getLogMessagePrefix(logSeverityToCString(logMessage.severity), logMessage.category.c_str()) << logMessage.message << '\n';
         });
 
         _consoleWindow = std::make_shared<ConsoleWindow>();
 
         _input = std::make_shared<Input>();
         _window = std::make_shared<SDLWindow>(1920, 1080);
-        _window->setVSync(true);
         _window->setOnSDLEventCallback([&](const SDL_Event* ev)
         {
             ImGui_ImplSDL2_ProcessEvent(ev);
@@ -43,8 +42,6 @@ namespace BGLRenderer
             _renderer->resizeFrame(width, height);
             _application->onWindowResize(width, height);
         });
-
-        _window->setVSync(false);
 
         initImgui();
 
@@ -79,6 +76,11 @@ namespace BGLRenderer
 
             _application->onUpdate(static_cast<float>(deltaTime));
             _assetManager->tick();
+
+            if (_input->keyboard()->getKeyDown(SDLK_BACKQUOTE))
+            {
+                _showConsoleWindow = !_showConsoleWindow;
+            }
 
             renderTimer.restart();
             _renderer->beginFrame();

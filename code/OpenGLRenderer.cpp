@@ -210,6 +210,8 @@ namespace BGLRenderer
         _lightBuffer->bind();
         _quadMesh->bind();
 
+        glViewport(0, 0, _frameWidth, _frameHeight);
+        
         GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
         GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 
@@ -261,6 +263,8 @@ namespace BGLRenderer
     {
         _frameFramebuffer->bind();
 
+        glViewport(0, 0, _frameWidth, _frameHeight);
+
         GL_CALL(glDisable(GL_BLEND));
 
         GL_CALL(glDepthMask(GL_TRUE));
@@ -280,6 +284,8 @@ namespace BGLRenderer
         GL_CALL(glDisable(GL_DEPTH_TEST));
 
         _frameFramebuffer->bind();
+        
+        glViewport(0, 0, _frameWidth, _frameHeight);
 
         GLenum drawTargets[] = {
             GL_COLOR_ATTACHMENT0

@@ -1,9 +1,11 @@
 ﻿#include "Input.h"
 
-#include <iostream>
-
 namespace BGLRenderer
 {
+    Log Mouse::_logger{"Mouse"};
+    Log Keyboard::_logger{"Keyboard"};
+    Log Input::_logger{"Input"};
+    
     void Mouse::startFrame()
     {
         std::memset(_buttonsDown, false, MaxButtons * sizeof(bool));
@@ -45,7 +47,7 @@ namespace BGLRenderer
             unsigned int keycode = ev->key.keysym.sym;
             if (keycode >= MaxKeys)
             {
-                std::printf("Keycode is not supported!");
+                _logger.warning("Keycode is not supported!");
                 return;
             }
 
@@ -57,7 +59,7 @@ namespace BGLRenderer
             unsigned int keycode = ev->key.keysym.sym;
             if (keycode >= MaxKeys)
             {
-                std::printf("Keycode is not supported!");
+                _logger.warning("Keycode is not supported!");
                 return;
             }
 

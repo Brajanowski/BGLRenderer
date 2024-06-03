@@ -14,6 +14,7 @@ namespace BGLRenderer
         _textureAssetManager(std::make_shared<TextureAssetManager>(std::make_shared<TextureLoader>(_contentLoader), std::make_shared<ObjectInMemoryCache<std::string, OpenGLTexture2D>>())),
         _materialAssetManager(std::make_shared<MaterialAssetManager>(std::make_shared<MaterialLoader>(_contentLoader, _textureAssetManager, _programAssetManager), std::make_shared<ObjectInMemoryCache<std::string, OpenGLMaterial>>())),
         _modelAssetManager(std::make_shared<ModelAssetManager>(std::make_shared<ModelLoader>(_contentLoader, _textureAssetManager, _materialAssetManager), std::make_shared<ObjectInMemoryCache<std::string, OpenGLRenderObject>>())),
+        _configLoader(_contentLoader),
         _sceneLoader(_contentLoader, _modelAssetManager, _materialAssetManager)
     {
     }
@@ -89,6 +90,11 @@ namespace BGLRenderer
         std::shared_ptr<Scene> scene = _sceneLoader.load(name);
         addSceneListener(scene, name);
         return scene;
+    }
+
+    std::shared_ptr<Config> AssetManager::getConfig(const std::string& name)
+    {
+        return _configLoader.loadJSON(name);
     }
 
     Log& AssetManager::logger()

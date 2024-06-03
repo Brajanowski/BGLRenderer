@@ -31,7 +31,7 @@ namespace BGLRenderer
     int OpenGLFramebuffer::createColorAttachment(const std::string& name, GLenum format)
     {
         std::shared_ptr<OpenGLTexture2D> texture = std::make_shared<OpenGLTexture2D>(name, _width, _height, format, GL_CLAMP_TO_EDGE, GL_LINEAR);
-        return addColorAttachment(texture);
+        return addColorAttachment(texture, true);
     }
 
     void OpenGLFramebuffer::setDepthAttachment(const std::shared_ptr<OpenGLTexture2D>& texture, bool autoResize)
@@ -48,7 +48,7 @@ namespace BGLRenderer
     void OpenGLFramebuffer::createDepthAttachment(GLenum format)
     {
         std::shared_ptr<OpenGLTexture2D> texture = std::make_shared<OpenGLTexture2D>("Depth", _width, _height, format, GL_CLAMP_TO_EDGE, GL_LINEAR);
-        setDepthAttachment(texture);
+        setDepthAttachment(texture, true);
     }
 
     bool OpenGLFramebuffer::validate()

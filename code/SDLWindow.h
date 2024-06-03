@@ -15,6 +15,7 @@ namespace BGLRenderer
         ~SDLWindow();
 
         void setVSync(bool enable);
+        void resize(int width, int height);
 
         void processEvents();
         void swapBuffers();

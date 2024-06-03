@@ -40,6 +40,12 @@ add_executable(BGLrenderer
     code/ConsoleWindow.cpp
     code/Input.h
     code/Input.cpp
+    code/RapidJSONParsers.h
+    code/RapidJSONParsers.cpp
+    code/Config.h
+    code/Config.cpp
+    code/ConfigLoader.h
+    code/ConfigLoader.cpp
     code/GLMMath.h
     code/Transform.h
     code/PerspectiveCamera.h

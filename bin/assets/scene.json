@@ -10,7 +10,7 @@
             ],
             "transform": {
                 "position": {
-                    "x": 0,
+                    "x": -5,
                     "y": 5,
                     "z": 2.5
                 },
@@ -23,34 +23,53 @@
         },
         {
             "name": "Sphere",
-            "model": "sphere.gltf",
+            "model": "sphere_hres.gltf",
             "materials": [
-                "basic_red.json"
+                "materials/M_Metal046A.json"
             ],
             "transform": {
                 "position": {
-                    "x": 0.0,
-                    "y": 1.0,
-                    "z": 0.0
+                    "x": -2.0,
+                    "y": 5.0,
+                    "z": 5.0
                 },
                 "scale": {
                     "x": 1,
                     "y": 1,
-                    "z": 1.0
+                    "z": 1
                 }
             }
         },
         {
-            "name": "Sphere",
-            "model": "sphere.gltf",
+            "name": "Sphere 2",
+            "model": "sphere_hres.gltf",
             "materials": [
-                "basic_blue.json"
+                "materials/M_Planks037B.json"
             ],
             "transform": {
                 "position": {
-                    "x": 2,
+                    "x": -4.0,
+                    "y": 5.0,
+                    "z": 5.0
+                },
+                "scale": {
+                    "x": 1,
                     "y": 1,
-                    "z": 0
+                    "z": 1
+                }
+            }
+        },
+        {
+            "name": "Sphere Center",
+            "model": "sphere_hres.gltf",
+            "materials": [
+                "materials/M_white.json"
+            ],
+            "transform": {
+                "position": {
+                    "x": -4.0,
+                    "y": 0.0,
+                    "z": 0.0
                 },
                 "scale": {
                     "x": 1,

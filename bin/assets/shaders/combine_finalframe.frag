@@ -11,6 +11,6 @@ void main()
 {
     vec3 albedo = texture2D(u_albedo, uv0).xyz;
     vec3 light = texture2D(u_light, uv0).xyz;
-    
-    fragColor = vec4(albedo * light, 1.0);
+
+    fragColor = vec4(light, 1.0);
 }

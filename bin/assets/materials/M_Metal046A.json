@@ -1,0 +1,43 @@
+{
+    "asset_type": "material",
+    "program": {
+        "vertex_shader": "shaders/gbuffer_default.vert",
+        "fragment_shader": "shaders/gbuffer_default.frag"
+    },
+    "type": "opaque",
+    "values": {
+        "tint": {
+            "value_type": "vec4",
+            "value": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0,
+                "w": 1.0
+            }
+        },
+        "baseColor": {
+            "value_type": "texture2D",
+            "value": {
+                "texture": "textures_pbr/Metal046A_2K-PNG_Color.png"
+            }
+        },
+        "normalMap": {
+            "value_type": "texture2D",
+            "value": {
+                "texture": "textures_pbr/Metal046A_2K-PNG_NormalGL.png"
+            }
+        },
+        "roughnessMap": {
+            "value_type": "texture2D",
+            "value": {
+                "texture": "textures_pbr/Metal046A_2K-PNG_Roughness.png"
+            }
+        },
+        "metallicMap": {
+            "value_type": "texture2D",
+            "value": {
+                "texture": "textures_pbr/Metal046A_2K-PNG_Metalness.png"
+            }
+        }
+    }
+}

@@ -1,5 +1,5 @@
 struct Material {
-    vec4 color;
+    vec3 albedo;
     float metallic;
     float roughness;
 }

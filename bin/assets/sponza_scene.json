@@ -1,0 +1,22 @@
+{
+    "asset_type": "scene",
+    "hdr": "forgotten_miniland_4k.hdr",
+    "scene_objects": [
+        {
+            "name": "Sponza",
+            "model": "sponza/sponza.gltf",
+            "transform": {
+                "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "scale": {
+                    "x": 0.1,
+                    "y": 0.1,
+                    "z": 0.1
+                }
+            }
+        }
+    ]
+}

@@ -3,9 +3,6 @@ project(BGLrenderer)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CXX_STANDARD_REQUIRED ON)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin)
-set(WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
@@ -25,86 +22,92 @@ set(GLM_INCLUDE_DIRS ${CMAKE_CURRENT_LIST_DIR}/lib/glm)
 set(RAPIDJSON_INCLUDE_DIRS ${CMAKE_CURRENT_LIST_DIR}/lib/rapidjson)
 
 add_executable(BGLrenderer
-    code/Base.h
-    code/EntryPoint.cpp
-    code/Engine.h
-    code/Engine.cpp
-    code/Timer.h
-    code/Application.h
-    code/SDLWindow.h
-    code/SDLWindow.cpp
-    code/Log.h
-    code/Log.cpp
-    code/Publisher.h
-    code/ConsoleWindow.h
-    code/ConsoleWindow.cpp
-    code/Input.h
-    code/Input.cpp
-    code/RapidJSONParsers.h
-    code/RapidJSONParsers.cpp
-    code/Config.h
-    code/Config.cpp
-    code/ConfigLoader.h
-    code/ConfigLoader.cpp
-    code/GLMMath.h
-    code/Transform.h
-    code/PerspectiveCamera.h
-    code/OpenGLBase.h
-    code/OpenGLBase.cpp
-    code/OpenGLProgram.h
-    code/OpenGLProgram.cpp
-    code/OpenGLMaterial.h
-    code/OpenGLMaterial.cpp
-    code/OpenGLTexture2D.h
-    code/OpenGLTexture2D.cpp
-    code/OpenGLMesh.h
-    code/OpenGLMesh.cpp
-    code/OpenGLFramebuffer.h
-    code/OpenGLFramebuffer.cpp
-    code/OpenGLRenderObject.h
-    code/OpenGLRenderer.h
-    code/OpenGLRenderer.cpp
-    code/Scene.h
-    code/Scene.cpp
-    code/SceneObject.h
-    code/SceneObject.cpp
-    code/AssetContentLoader.h
-    code/AssetContentLoader.cpp
-    code/ConcreteAssetManager.h
-    code/ConcreteAssetManager.cpp
-    code/AssetManager.h
-    code/AssetManager.cpp
-    code/AssetFileChangesObserver.h
-    code/AssetFileChangesObserver.cpp
-    code/AssetManagerTypes.h
-    code/ProgramLoader.h
-    code/ProgramLoader.cpp
-    code/TextureLoader.h
-    code/TextureLoader.cpp
-    code/ModelLoader.h
-    code/ModelLoader.cpp
-    code/MaterialLoader.h
-    code/MaterialLoader.cpp
-    code/SceneLoader.h
-    code/SceneLoader.cpp
-    code/ObjectInMemoryCache.h
-    code/ApplicationSandbox.h
-    code/ApplicationSandbox.cpp
-    code/stb_image.h
-    code/cgltf.h
-    lib/imgui/backends/imgui_impl_opengl3.cpp
-    lib/imgui/backends/imgui_impl_opengl3.h
-    lib/imgui/backends/imgui_impl_sdl.cpp
-    lib/imgui/backends/imgui_impl_sdl.h
+        code/Foundation/Base.h
+        code/Platform/EntryPoint.cpp
+        code/Foundation/Engine.h
+        code/Foundation/Engine.cpp
+        code/Foundation/Timer.h
+        code/Foundation/Application.h
+        code/Platform/SDLWindow.h
+        code/Platform/SDLWindow.cpp
+        code/Foundation/Log.h
+        code/Foundation/Log.cpp
+        code/Foundation/Publisher.h
+        code/Foundation/ConsoleWindow.h
+        code/Foundation/ConsoleWindow.cpp
+        code/Foundation/Input.h
+        code/Foundation/Input.cpp
+        code/Utility/RapidJSONParsers.h
+        code/Utility/RapidJSONParsers.cpp
+        code/Foundation/Config.h
+        code/Foundation/Config.cpp
+        code/Assets/ConfigLoader.h
+        code/Assets/ConfigLoader.cpp
+        code/Foundation/GLMMath.h
+        code/World/Transform.h
+        code/World/PerspectiveCamera.h
+        code/Graphics/OpenGLBase.h
+        code/Graphics/OpenGLBase.cpp
+        code/Graphics/Resources/OpenGLProgram.h
+        code/Graphics/Resources/OpenGLProgram.cpp
+        code/Graphics/Resources/OpenGLMaterial.h
+        code/Graphics/Resources/OpenGLMaterial.cpp
+        code/Graphics/Resources/OpenGLTexture2D.h
+        code/Graphics/Resources/OpenGLTexture2D.cpp
+        code/Graphics/Resources/OpenGLMesh.h
+        code/Graphics/Resources/OpenGLMesh.cpp
+        code/Graphics/Resources/OpenGLCubemap.h
+        code/Graphics/Resources/OpenGLCubemap.cpp
+        code/Graphics/Resources/OpenGLEnvironmentMap.h
+        code/Graphics/Resources/OpenGLEnvironmentMap.cpp
+        code/Graphics/Resources/OpenGLFramebuffer.h
+        code/Graphics/Resources/OpenGLFramebuffer.cpp
+        code/Graphics/OpenGLRenderObject.h
+        code/Graphics/OpenGLRenderer.h
+        code/Graphics/OpenGLRenderer.cpp
+        code/World/Scene.h
+        code/World/Scene.cpp
+        code/World/SceneObject.h
+        code/World/SceneObject.cpp
+        code/Assets/AssetContentLoader.h
+        code/Assets/AssetContentLoader.cpp
+        code/Assets/ConcreteAssetManager.h
+        code/Assets/ConcreteAssetManager.cpp
+        code/Assets/AssetManager.h
+        code/Assets/AssetManager.cpp
+        code/Assets/AssetFileChangesObserver.h
+        code/Assets/AssetFileChangesObserver.cpp
+        code/Assets/AssetManagerTypes.h
+        code/Assets/ProgramLoader.h
+        code/Assets/ProgramLoader.cpp
+        code/Assets/TextureLoader.h
+        code/Assets/TextureLoader.cpp
+        code/Assets/ModelLoader.h
+        code/Assets/ModelLoader.cpp
+        code/Assets/MaterialLoader.h
+        code/Assets/MaterialLoader.cpp
+        code/Assets/SceneLoader.h
+        code/Assets/SceneLoader.cpp
+        code/Foundation/ObjectInMemoryCache.h
+        code/Sandbox/ApplicationSandbox.h
+        code/Sandbox/ApplicationSandbox.cpp
+        code/Utility/stb_image.h
+        code/Utility/cgltf.h
+        lib/imgui/backends/imgui_impl_opengl3.cpp
+        lib/imgui/backends/imgui_impl_opengl3.h
+        lib/imgui/backends/imgui_impl_sdl.cpp
+        lib/imgui/backends/imgui_impl_sdl.h
+        code/Graphics/Gizmos.cpp
+        code/Graphics/Gizmos.h
+        code/Graphics/EnvironmentMapGenerator.cpp
+        code/Graphics/EnvironmentMapGenerator.h
 )
-
-set_target_properties(BGLrenderer PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/bin")
 
 if (MSVC)
     target_compile_options(BGLrenderer PRIVATE /W4 /WX)
-else()
+else ()
     target_compile_options(BGLrenderer PRIVATE -Wall -Wextra -Wpedantic -Werror)
-endif()
+endif ()
 
 target_compile_features(BGLrenderer PRIVATE cxx_std_20)
 

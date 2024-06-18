@@ -1,8 +1,8 @@
 {
     "asset_type": "material",
     "program": {
-        "vertexShader": "shaders/gbuffer_default.vert",
-        "fragmentShader": "shaders/gbuffer_default.frag"
+        "vertex_shader": "shaders/gbuffer_default.vert",
+        "fragment_shader": "shaders/gbuffer_default.frag"
     },
     "type": "opaque",
     "values": {
@@ -20,6 +20,14 @@
             "value": {
                 "texture": "white"
             }
+        },
+        "metallic": {
+            "value_type": "float",
+            "value": 0
+        },
+        "roughness": {
+            "value_type": "float",
+            "value": 0.5
         }
     }
 }

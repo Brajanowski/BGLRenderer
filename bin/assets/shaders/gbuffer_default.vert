@@ -15,11 +15,13 @@ uniform mat4 u_viewProjection;
 
 void main()
 {
-    normal = normalize(vec3(u_model * vec4(attribNormal, 0.0)));
-    tangent = normalize(vec3(u_model * vec4(attribTangent, 0.0)));
+    mat3 model3 = mat3(u_model);
+
+    normal = normalize(model3 * attribNormal);
+    tangent = normalize(model3 * attribTangent);
     tangent = normalize(tangent - dot(tangent, normal) * normal);
 
-    vec3 bitangent = normalize(cross(normal, tangent));
+    vec3 bitangent = normalize(cross(tangent, normal));
     tbn = mat3(tangent, bitangent, normal);
 
     uv0 = attribUV0;

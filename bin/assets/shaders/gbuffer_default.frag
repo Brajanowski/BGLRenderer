@@ -5,11 +5,11 @@ in vec3 tangent;
 in vec2 uv0;
 in mat3 tbn;
 
-layout(location = 0) out vec4 albedoBuffer;
-layout(location = 1) out vec4 normalBuffer;
-layout(location = 2) out vec4 surfaceBuffer;
+layout (location = 0) out vec4 albedoBuffer;
+layout (location = 1) out vec4 normalBuffer;
+layout (location = 2) out vec4 surfaceBuffer;
 
-uniform vec4 u_tint = vec4(1, 1, 1, 1); 
+uniform vec4 u_tint = vec4(1, 1, 1, 1);
 uniform sampler2D u_baseColor;
 uniform bool u_baseColorExists;
 
@@ -23,6 +23,10 @@ uniform bool u_roughnessMapExists;
 uniform float u_metallic = 0.0;
 uniform sampler2D u_metallicMap;
 uniform bool u_metallicMapExists;
+
+// @NOTE - it comes directly from gltf loader, green channel contains roughness and blue channel contains metalness
+uniform sampler2D u_roughnessMetallicMap;
+uniform bool u_roughnessMetallicMapExists;
 
 void main()
 {
@@ -40,15 +44,25 @@ void main()
     }
 
     float roughness = u_roughness;
-    if (u_roughnessMapExists)
-    {
-        roughness = texture2D(u_roughnessMap, uv0).r;
-    }
-
     float metallic = u_metallic;
-    if (u_metallicMapExists)
+
+    if (u_roughnessMetallicMapExists)
     {
-        metallic = texture2D(u_metallicMap, uv0).r;
+        vec3 roughnessMetallic = texture2D(u_roughnessMetallicMap, uv0).rgb;
+        roughness = roughnessMetallic.g;
+        metallic = roughnessMetallic.b;
+    }
+    else
+    {
+        if (u_roughnessMapExists)
+        {
+            roughness = texture2D(u_roughnessMap, uv0).r;
+        }
+
+        if (u_metallicMapExists)
+        {
+            metallic = texture2D(u_metallicMap, uv0).r;
+        }
     }
 
     albedoBuffer = albedo;

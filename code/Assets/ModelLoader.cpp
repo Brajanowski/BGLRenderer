@@ -175,6 +175,16 @@ namespace BGLRenderer
         {
             loadCGLTFMaterialTextureToSlot(modelName, target, "normalMap", basePath, material->normal_texture.texture);
         }
+
+        if (material->has_pbr_metallic_roughness &&
+            material->pbr_metallic_roughness.metallic_roughness_texture.texture != nullptr)
+        {
+            loadCGLTFMaterialTextureToSlot(modelName,
+                                           target,
+                                           "roughnessMetallicMap",
+                                           basePath,
+                                           material->pbr_metallic_roughness.metallic_roughness_texture.texture);
+        }
     }
 
     void ModelLoader::loadCGLTFMaterialTextureToSlot(const std::string& modelName,

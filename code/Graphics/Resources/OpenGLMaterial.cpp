@@ -10,18 +10,21 @@ namespace BGLRenderer
 
     namespace ValuesKeys
     {
-        static constexpr const char *tintColor = "tint";
-        static constexpr const char *baseColor = "baseColor";
-        static constexpr const char *normalMap = "normalMap";
-        static constexpr const char *roughnessSingle = "roughnes";
-        static constexpr const char *roughnessMap = "roughnessMap";
-        static constexpr const char *metallicSingle = "metallic";
-        static constexpr const char *metallicMap = "metallicMap";
+        static constexpr const char* tintColor = "tint";
+        static constexpr const char* baseColor = "baseColor";
+        static constexpr const char* normalMap = "normalMap";
+        static constexpr const char* roughnessSingle = "roughnes";
+        static constexpr const char* roughnessMap = "roughnessMap";
+        static constexpr const char* metallicSingle = "metallic";
+        static constexpr const char* metallicMap = "metallicMap";
+
+        static constexpr const char* roughnessMetallicMap = "roughnessMetallicMap";
 
         static constexpr const char* existsSuffix = "Exists";
     }
 
-    OpenGLMaterial::OpenGLMaterial(const std::string& name, MaterialType type, MaterialTag tag, const std::shared_ptr<OpenGLProgram>& program) :
+    OpenGLMaterial::OpenGLMaterial(const std::string& name, MaterialType type, MaterialTag tag,
+                                   const std::shared_ptr<OpenGLProgram>& program) :
         _name(name),
         _type(type),
         _tag(tag),
@@ -73,40 +76,40 @@ namespace BGLRenderer
 
         int textureSlot = 0;
 
-        for (auto& [key, value] : _valuesMap)
+        for (auto& [key, value]: _valuesMap)
         {
             std::string uniformName = "u_" + value.name;
             value.uniformLocation = _program->getUniformLocation(uniformName);
-            
+
             switch (value.type)
             {
-            case OpenGLMaterialValueType::int32:
-                _program->setInt(value.uniformLocation, static_cast<GLint>(value.intValue));
-                break;
-            case OpenGLMaterialValueType::float32:
-                _program->setFloat(value.uniformLocation, static_cast<GLfloat>(value.floatValue));
-                break;
-            case OpenGLMaterialValueType::vector2:
-                _program->setVector2(value.uniformLocation, value.vec2);
-                break;
-            case OpenGLMaterialValueType::vector3:
-                _program->setVector3(value.uniformLocation, value.vec3);
-                break;
-            case OpenGLMaterialValueType::vector4:
-                _program->setVector4(value.uniformLocation, value.vec4);
-                break;
-            case OpenGLMaterialValueType::matrix4x4:
-                _program->setMatrix4x4(value.uniformLocation, value.mat4x4);
-                break;
-            case OpenGLMaterialValueType::texture:
-                value.texture->bind(textureSlot);
-                _program->setInt(value.uniformLocation, textureSlot);
+                case OpenGLMaterialValueType::int32:
+                    _program->setInt(value.uniformLocation, static_cast<GLint>(value.intValue));
+                    break;
+                case OpenGLMaterialValueType::float32:
+                    _program->setFloat(value.uniformLocation, static_cast<GLfloat>(value.floatValue));
+                    break;
+                case OpenGLMaterialValueType::vector2:
+                    _program->setVector2(value.uniformLocation, value.vec2);
+                    break;
+                case OpenGLMaterialValueType::vector3:
+                    _program->setVector3(value.uniformLocation, value.vec3);
+                    break;
+                case OpenGLMaterialValueType::vector4:
+                    _program->setVector4(value.uniformLocation, value.vec4);
+                    break;
+                case OpenGLMaterialValueType::matrix4x4:
+                    _program->setMatrix4x4(value.uniformLocation, value.mat4x4);
+                    break;
+                case OpenGLMaterialValueType::texture:
+                    value.texture->bind(textureSlot);
+                    _program->setInt(value.uniformLocation, textureSlot);
 
-                textureSlot++;
-                break;
+                    textureSlot++;
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
             }
         }
     }
@@ -143,7 +146,8 @@ namespace BGLRenderer
 
         if constexpr (Debug::LogMaterialValuesSetters)
         {
-            openGLLogger.debug("Setting Vector2 {} as value \"{}\" in material \"{}\"", glm::to_string(value), name, _name);
+            openGLLogger.debug("Setting Vector2 {} as value \"{}\" in material \"{}\"", glm::to_string(value), name,
+                               _name);
         }
     }
 
@@ -155,7 +159,8 @@ namespace BGLRenderer
 
         if constexpr (Debug::LogMaterialValuesSetters)
         {
-            openGLLogger.debug("Setting Vector3 {} as value \"{}\" in material \"{}\"", glm::to_string(value), name, _name);
+            openGLLogger.debug("Setting Vector3 {} as value \"{}\" in material \"{}\"", glm::to_string(value), name,
+                               _name);
         }
     }
 
@@ -167,7 +172,8 @@ namespace BGLRenderer
 
         if constexpr (Debug::LogMaterialValuesSetters)
         {
-            openGLLogger.debug("Setting Vector4 {} as value \"{}\" in material \"{}\"", glm::to_string(value), name, _name);
+            openGLLogger.debug("Setting Vector4 {} as value \"{}\" in material \"{}\"", glm::to_string(value), name,
+                               _name);
         }
     }
 
@@ -179,7 +185,8 @@ namespace BGLRenderer
 
         if constexpr (Debug::LogMaterialValuesSetters)
         {
-            openGLLogger.debug("Setting matrix \n{}\n as value \"{}\" in material \"{}\"", glm::to_string(value), name, _name);
+            openGLLogger.debug("Setting matrix \n{}\n as value \"{}\" in material \"{}\"", glm::to_string(value), name,
+                               _name);
         }
     }
 
@@ -196,7 +203,8 @@ namespace BGLRenderer
 
         if constexpr (Debug::LogMaterialValuesSetters)
         {
-            openGLLogger.debug("Setting texture \"{}\" as value \"{}\" in material \"{}\"", texture->name(), name, _name);
+            openGLLogger.debug("Setting texture \"{}\" as value \"{}\" in material \"{}\"", texture->name(), name,
+                               _name);
         }
     }
 
@@ -204,7 +212,8 @@ namespace BGLRenderer
     {
         ASSERT(program != nullptr, "Program cannot be nullptr!");
 
-        openGLLogger.debug("Material \"{}\" is changing it's program, all values assigned to that material will reset", _name);
+        openGLLogger.debug("Material \"{}\" is changing it's program, all values assigned to that material will reset",
+                           _name);
         resetValues();
 
         if (_program != nullptr)
@@ -233,9 +242,11 @@ namespace BGLRenderer
         setInt(std::string(ValuesKeys::normalMap) + ValuesKeys::existsSuffix, hasTexture(ValuesKeys::normalMap));
         setInt(std::string(ValuesKeys::roughnessMap) + ValuesKeys::existsSuffix, hasTexture(ValuesKeys::roughnessMap));
         setInt(std::string(ValuesKeys::metallicMap) + ValuesKeys::existsSuffix, hasTexture(ValuesKeys::metallicMap));
+        setInt(std::string(ValuesKeys::roughnessMetallicMap) + ValuesKeys::existsSuffix,
+               hasTexture(ValuesKeys::roughnessMetallicMap));
     }
 
-    OpenGLMaterialValue* OpenGLMaterial::getOrCreateValue(const std::string& name)
+    OpenGLMaterialValue *OpenGLMaterial::getOrCreateValue(const std::string& name)
     {
         if (!_valuesMap.contains(name))
         {
@@ -248,7 +259,7 @@ namespace BGLRenderer
         return &_valuesMap[name];
     }
 
-    OpenGLMaterialValue* OpenGLMaterial::getValue(const std::string& name)
+    OpenGLMaterialValue *OpenGLMaterial::getValue(const std::string& name)
     {
         if (!_valuesMap.contains(name))
         {
@@ -260,14 +271,15 @@ namespace BGLRenderer
 
     void OpenGLMaterial::programDidLinked()
     {
-        for (auto& [key, val] : _valuesMap)
+        for (auto& [key, val]: _valuesMap)
         {
             std::string uniformName = "u_" + val.name;
             val.uniformLocation = _program->getUniformLocation(uniformName);
 
             if (val.uniformLocation == -1)
             {
-                openGLLogger.warning("Material \"{}\": couldn't find uniform \"{}\" inside of new program.", _name, uniformName);
+                openGLLogger.warning("Material \"{}\": couldn't find uniform \"{}\" inside of new program.", _name,
+                                     uniformName);
             }
         }
 

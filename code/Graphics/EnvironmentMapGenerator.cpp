@@ -25,7 +25,6 @@ namespace BGLRenderer
                                                                 "shaders/irradiance_cubemap_generator.frag");
 
         _framebuffer = std::make_shared<OpenGLFramebuffer>("Environment Map Generator", 2048, 2048);
-        //_framebuffer->createDepthAttachment(GL_DEPTH_COMPONENT);
 
         _resourcesLoaded = true;
     }
@@ -81,9 +80,6 @@ namespace BGLRenderer
         glm::mat4 projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
 
         program->bind();
-        program->setMatrix4x4("u_projection", projection);
-        program->setMatrix4x4("u_view", glm::mat4(1.0f));
-
         bindUniformsFn(program);
 
         _framebuffer->bind();
@@ -100,7 +96,8 @@ namespace BGLRenderer
         {
             _framebuffer->addColorCubeFace(target, static_cast<OpenGLCubeFace>(i));
 
-            program->setMatrix4x4("u_view", captureViews[i]);
+            glm::mat4 viewProjectionInv = glm::inverse(projection * captureViews[i]);
+            program->setMatrix4x4("u_viewProjectionInv", viewProjectionInv);
 
             _quad->bind();
             _quad->draw();

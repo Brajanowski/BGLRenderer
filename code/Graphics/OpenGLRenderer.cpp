@@ -269,7 +269,15 @@ namespace BGLRenderer
 
         _skyboxProgram->bind();
         _skyboxProgram->setInt("u_texture", 0);
-        setFrameDataUniforms(_skyboxProgram, _frameData);
+
+        glm::mat4 viewNoTranslate = _frameData.view;
+        viewNoTranslate[3][0] = 0.0f;
+        viewNoTranslate[3][1] = 0.0f;
+        viewNoTranslate[3][2] = 0.0f;
+        viewNoTranslate[3][1] = 1.0f;
+
+        glm::mat4 viewProjectionInv = glm::inverse(_frameData.projection * viewNoTranslate);
+        _skyboxProgram->setMatrix4x4("u_viewProjectionInv", viewProjectionInv);
 
         GL_CALL(glEnable(GL_DEPTH_TEST));
         GL_CALL(glDepthMask(GL_FALSE));
